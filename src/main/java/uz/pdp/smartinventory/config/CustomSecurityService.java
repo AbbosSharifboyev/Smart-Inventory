@@ -19,6 +19,7 @@ public class CustomSecurityService {
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
+        System.out.println("test branch");
         String username = authentication.getName();
         return userRepository.hasPermission(username, permission);
     }
