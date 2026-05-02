@@ -21,6 +21,7 @@ public class CustomSecurityService {
             return false;
         }
         String username = authentication.getName();
+        System.out.println("Test");
         return userRepository.hasPermission(username,permission);
     }
 }
