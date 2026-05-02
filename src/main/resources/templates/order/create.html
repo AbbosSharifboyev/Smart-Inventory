@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yangi Buyurtma | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fef3c7;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13.5px;
+        }
+        .breadcrumb-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color .15s;
+        }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 12px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        .topbar-btn {
+            width: 36px; height: 36px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 15px;
+            transition: all .15s;
+            text-decoration: none;
+        }
+        .topbar-btn:hover { background: var(--bg); color: var(--text); }
+        .notif-dot { position: relative; }
+        .notif-dot::after {
+            content: '';
+            position: absolute;
+            top: 7px; right: 7px;
+            width: 7px; height: 7px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+        }
+
+        .page-body {
+            flex: 1;
+            padding: 32px;
+            animation: fadeUp .3s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header { margin-bottom: 28px; }
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+        .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+        .create-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header-block { padding: 20px 24px 0; }
+
+        .card-title-sm {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .title-icon {
+            width: 30px; height: 30px;
+            background: var(--primary-light);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            color: var(--primary-dark);
+        }
+
+        .card-body-block { padding: 20px 24px 24px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .label-required { color: var(--danger); font-size: 11px; }
+        .label-optional { font-size: 11px; color: var(--text-light); font-weight: 400; }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+            -webkit-appearance: none;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+        }
+        .form-control.is-invalid { border-color: var(--danger); }
+        .form-control::placeholder { color: var(--text-light); }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 36px 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+        }
+
+        .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+        .invalid-feedback {
+            font-size: 12px;
+            color: var(--danger);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+
+        /* ITEMS SECTION */
+        .section-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .add-item-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            font-size: 12.5px;
+            font-family: inherit;
+            font-weight: 600;
+            background: var(--primary-light);
+            color: #92400e;
+            border: 1px solid #fde68a;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .add-item-btn:hover { background: #fde68a; }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 36px;
+            gap: 10px;
+            align-items: end;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .item-row:last-child { margin-bottom: 0; }
+
+        .item-remove-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all .15s;
+        }
+        .item-remove-btn:hover { background: #fecaca; }
+
+        .items-empty {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+            background: var(--bg);
+            border: 1.5px dashed var(--border);
+            border-radius: 8px;
+        }
+
+        /* SUMMARY BOX */
+        .summary-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 16px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+        .summary-row.total {
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+            padding-top: 10px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .summary-label { color: var(--text-muted); }
+        .summary-value { font-weight: 600; color: var(--text); }
+
+        /* BUTTONS */
+        .btn-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .btn-primary-custom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 11px 18px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 600;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+            box-shadow: 0 1px 4px rgba(245,158,11,.3);
+        }
+        .btn-primary-custom:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(245,158,11,.35);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 11px 18px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 600;
+            background: var(--surface);
+            color: var(--text-muted);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+        }
+        .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+        /* SIDE PANEL */
+        .side-stack { display: flex; flex-direction: column; gap: 14px; }
+
+        .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .check-icon {
+            width: 20px; height: 20px;
+            background: #d1fae5;
+            color: #059669;
+            border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .tip-box {
+            background: var(--primary-light);
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            gap: 10px;
+            font-size: 12.5px;
+            color: #92400e;
+            line-height: 1.5;
+        }
+        .tip-box i { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+        @media (max-width: 900px) {
+            .create-layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='orders')}"></div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a href="#">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <a th:href="@{/orders}">Buyurtmalar</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Yangi qo'shish</span>
+        </nav>
+        <div class="topbar-actions">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <div class="page-header">
+            <h1 class="page-title">Yangi buyurtma</h1>
+            <p class="page-subtitle">Mijoz va mahsulot ma'lumotlarini kiriting.</p>
+        </div>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <div class="create-layout">
+
+            <!-- FORM CARD -->
+            <div class="card">
+                <div class="card-header-block">
+                    <div class="card-title-sm">
+                        <div class="title-icon"><i class="bi bi-cart-plus"></i></div>
+                        Buyurtma ma'lumotlari
+                    </div>
+                </div>
+                <div class="card-body-block">
+
+                    <form th:action="@{/orders/create}" th:object="${orderRequest}" method="post">
+
+                        <!-- USER -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                Mijoz
+                                <span class="label-required">*</span>
+                            </label>
+                            <select th:field="*{userId}"
+                                    class="form-select"
+                                    th:classappend="${#fields.hasErrors('userId')} ? ' is-invalid' : ''">
+                                <option value="" >— Mijozni tanlang —</option>
+                                <option th:each="u : ${users}"
+                                        th:value="${u.id}"
+                                        th:text="${u.fullName + ' - ' + '(' + u.username + ')'}">
+                                    Ali Valiyev - +998901234567
+                                </option>
+                            </select>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('userId')}">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{userId}"></span>
+                            </div>
+                            <p class="form-hint">Buyurtma beruvchi mijozni ro'yxatdan tanlang</p>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <!-- ADDRESS + PHONE -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                Manzil
+                                <span class="label-required">*</span>
+                            </label>
+                            <div style="position:relative;">
+                                <i class="bi bi-geo-alt" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:14px;pointer-events:none;"></i>
+                                <input type="text"
+                                       th:field="*{address}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('address')} ? ' is-invalid' : ''"
+                                       placeholder="Shahar, ko'cha, uy raqami"
+                                       style="padding-left:36px;">
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('address')}">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{address}"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Telefon raqam
+                                <span class="label-required">*</span>
+                            </label>
+                            <div style="position:relative;">
+                                <i class="bi bi-telephone" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:14px;pointer-events:none;"></i>
+                                <input type="text"
+                                       th:field="*{phone}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid' : ''"
+                                       placeholder="+998 90 123 45 67"
+                                       style="padding-left:36px;">
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{phone}"></span>
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <!-- ITEMS — Thymeleaf th:each bilan, JS yo'q -->
+                        <div>
+                            <div class="section-label">
+                                <span><i class="bi bi-box" style="margin-right:6px;color:var(--text-muted);"></i>Buyurtma tarkibi</span>
+                                <button type="button" class="add-item-btn" onclick="addRow()">
+                                    <i class="bi bi-plus"></i> Mahsulot qo'shish
+                                </button>
+                            </div>
+
+                            <!-- Statik qatorlar soni — foydalanuvchi "Qo'shish" bosgan sari yangi qator ko'rinadi -->
+                            <div id="items-wrapper">
+
+                                <!-- Birinchi qator doim ko'rinadi -->
+                                <div class="item-row" id="row-0">
+                                    <div>
+                                        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px;">Mahsulot</label>
+                                        <select name="items[0].productId" class="form-select" style="font-size:13.5px;" required>
+                                            <option value="">— Tanlang —</option>
+                                            <option th:each="p : ${products}"
+                                                    th:value="${p.id}"
+                                                    th:text="${p.name}">Mahsulot</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px;">Miqdor</label>
+                                        <input type="number" name="items[0].count"
+                                               min="1" value="1"
+                                               class="form-control" style="font-size:13.5px;"
+                                               oninput="updateSummary()">
+                                    </div>
+                                    <button type="button" class="item-remove-btn" onclick="removeRow(0)" style="visibility:hidden;">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Qo'shimcha qatorlar (JS yordamida ko'rsatiladi/yashiriladi) -->
+                                <div th:each="p,i : ${products}" th:if="${i.index > 0 and i.index <= 9}"
+                                     th:id="'row-' + ${i.index}"
+                                     class="item-row"
+                                     style="display:none;">
+                                    <div>
+                                        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px;">Mahsulot</label>
+                                        <select th:name="'items[' + ${i.index} + '].productId'" class="form-select" style="font-size:13.5px;">
+                                            <option value="">— Tanlang —</option>
+                                            <option th:each="prod : ${products}"
+                                                    th:value="${prod.id}"
+                                                    th:text="${prod.name}">Mahsulot</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px;">Miqdor</label>
+                                        <input type="number"
+                                               th:name="'items[' + ${i.index} + '].count'"
+                                               min="1" value="1"
+                                               class="form-control" style="font-size:13.5px;"
+                                               oninput="updateSummary()">
+                                    </div>
+                                    <button type="button" class="item-remove-btn" th:onclick="'removeRow(' + ${i.index} + ')'">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <div id="items-empty" class="items-empty" style="display:none;">
+                                <i class="bi bi-inbox" style="font-size:22px;display:block;margin-bottom:6px;color:var(--text-light);"></i>
+                                Hech qanday mahsulot qo'shilmagan.
+                            </div>
+                        </div>
+
+                        <div class="summary-box" id="summary-box">
+                            <div class="summary-row">
+                                <span class="summary-label">Ko'rsatilgan qatorlar</span>
+                                <span class="summary-value" id="summary-count">1 xil</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span class="summary-label">Jami miqdor</span>
+                                <span class="summary-value" id="summary-items">1 ta</span>
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <div class="btn-row">
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="bi bi-check2"></i> Buyurtmani saqlash
+                            </button>
+                            <a th:href="@{/orders}" class="btn-ghost">
+                                <i class="bi bi-x"></i> Bekor qilish
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- SIDE PANEL -->
+            <div class="side-stack">
+
+                <!-- Checklist -->
+                <div class="card">
+                    <div class="card-header-block">
+                        <div class="card-title-sm">
+                            <div class="title-icon"><i class="bi bi-check2-all"></i></div>
+                            Qo'llanma
+                        </div>
+                    </div>
+                    <div class="card-body-block">
+                        <ul class="checklist">
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Avval ro'yxatdan o'tgan mijozni tanlang
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Kamida bitta mahsulot qo'shish shart
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Har bir mahsulot miqdori 1 tadan kam bo'lmasin
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Manzil va telefon to'liq kiritilsin
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Buyurtma yaratilgach status "Yangi" bo'ladi
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Status info -->
+                <div class="card">
+                    <div class="card-header-block">
+                        <div class="card-title-sm">
+                            <div class="title-icon"><i class="bi bi-info-circle"></i></div>
+                            Status yo'li
+                        </div>
+                    </div>
+                    <div class="card-body-block">
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;">
+                                <span style="width:8px;height:8px;border-radius:50%;background:#2563eb;flex-shrink:0;"></span>
+                                <span style="font-weight:600;color:#1e40af;">Yangi</span>
+                                <span style="color:var(--text-muted);">— Yaratildi, tasdiq kutilmoqda</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;">
+                                <span style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;"></span>
+                                <span style="font-weight:600;color:#92400e;">Jarayonda</span>
+                                <span style="color:var(--text-muted);">— Tasdiqlangan, tayyorlanmoqda</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;">
+                                <span style="width:8px;height:8px;border-radius:50%;background:#059669;flex-shrink:0;"></span>
+                                <span style="font-weight:600;color:#065f46;">Bajarilgan</span>
+                                <span style="color:var(--text-muted);">— Muvaffaqiyatli yetkazildi</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;">
+                                <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+                                <span style="font-weight:600;color:#991b1b;">Bekor qilingan</span>
+                                <span style="color:var(--text-muted);">— To'xtatilgan yoki qaytarilgan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tip -->
+                <div class="tip-box">
+                    <i class="bi bi-lightbulb"></i>
+                    <div>
+                        <strong>Maslahat:</strong> Buyurtma saqlanganidan so'ng uning statusini tahrirlash sahifasidan o'zgartirishingiz mumkin.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let visibleRows = [0];
+    const MAX_ROWS  = 10;
+
+    // Qatordagi barcha input/select larni disable/enable qilish
+    // disabled bo'lgan fieldlar form bilan submit QILINMAYDI — null muammo yo'qoladi
+    function setRowDisabled(rowEl, disabled) {
+        rowEl.querySelectorAll('select, input').forEach(el => {
+            el.disabled = disabled;
+        });
+    }
+
+    function addRow() {
+        for (let i = 1; i < MAX_ROWS; i++) {
+            const row = document.getElementById('row-' + i);
+            if (row && row.style.display === 'none') {
+                row.style.display = 'grid';
+                setRowDisabled(row, false); // ko'rsatilgan — enable
+                visibleRows.push(i);
+                toggleFirstRemoveBtn();
+                updateSummary();
+                return;
+            }
+        }
+    }
+
+    function removeRow(idx) {
+        const row = document.getElementById('row-' + idx);
+        if (!row) return;
+        row.style.display = 'none';
+        setRowDisabled(row, true); // yashirilgan — disable (submit qilinmaydi)
+        const sel = row.querySelector('select');
+        const inp = row.querySelector('input[type=number]');
+        if (sel) sel.value = '';
+        if (inp) inp.value = 1;
+        visibleRows = visibleRows.filter(v => v !== idx);
+        toggleFirstRemoveBtn();
+        updateSummary();
+    }
+
+    function toggleFirstRemoveBtn() {
+        const firstBtn = document.querySelector('#row-0 .item-remove-btn');
+        if (firstBtn) {
+            firstBtn.style.visibility = visibleRows.length > 1 ? 'visible' : 'hidden';
+        }
+    }
+
+    function updateSummary() {
+        let count = 0, total = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            if (row.style.display !== 'none') {
+                count++;
+                const qty = parseInt(row.querySelector('input[type=number]')?.value || 1);
+                total += qty;
+            }
+        });
+        document.getElementById('summary-count').textContent = count + ' xil';
+        document.getElementById('summary-items').textContent = total + ' ta';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Avval barcha qatorlarni disable qilamiz (sizning kodingiz)
+        for (let i = 1; i < MAX_ROWS; i++) {
+            const row = document.getElementById('row-' + i);
+            if (row) setRowDisabled(row, true);
+        }
+
+        // 2. QO'SHIMCHA: Agar backenddan ma'lumot qaytgan bo'lsa (xatolikdan keyin),
+        // qiymati bor qatorlarni avtomatik ko'rsatamiz
+        document.querySelectorAll('.item-row').forEach((row, index) => {
+            const select = row.querySelector('select');
+            if (select && select.value !== '') {
+                row.style.display = 'grid';
+                setRowDisabled(row, false);
+                if (!visibleRows.includes(index)) visibleRows.push(index);
+            }
+        });
+
+        toggleFirstRemoveBtn();
+        updateSummary();
+    });
+</script>
+</body>
+</html>

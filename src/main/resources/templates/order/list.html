@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyurtmalar | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fef3c7;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13.5px;
+        }
+        .breadcrumb-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color .15s;
+        }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 12px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+        .topbar-btn {
+            width: 36px; height: 36px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 15px;
+            transition: all .15s;
+            text-decoration: none;
+        }
+        .topbar-btn:hover { background: var(--bg); color: var(--text); }
+        .notif-dot { position: relative; }
+        .notif-dot::after {
+            content: '';
+            position: absolute;
+            top: 7px; right: 7px;
+            width: 7px; height: 7px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+        }
+
+        .page-body {
+            flex: 1;
+            padding: 32px;
+            animation: fadeUp .3s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+        .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 3px; }
+
+        .btn-primary-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            font-size: 13.5px;
+            font-family: inherit;
+            font-weight: 600;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(245,158,11,.3);
+        }
+        .btn-primary-custom:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245,158,11,.35);
+            color: #fff;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-icon {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .stat-icon.yellow { background: var(--primary-light); color: var(--primary-dark); }
+        .stat-icon.green  { background: #d1fae5; color: #059669; }
+        .stat-icon.blue   { background: #dbeafe; color: #2563eb; }
+        .stat-icon.red    { background: #fee2e2; color: #dc2626; }
+
+        .stat-value { font-size: 22px; font-weight: 700; line-height: 1; }
+        .stat-label { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .filter-bar {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color .15s;
+        }
+        .search-input:focus { border-color: var(--primary); background: var(--surface); }
+        .search-input::placeholder { color: var(--text-light); }
+
+        .filter-select {
+            padding: 9px 32px 9px 12px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color .15s;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+        .filter-select:focus { border-color: var(--primary); }
+
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 600;
+            background: var(--text);
+            color: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .15s;
+        }
+        .filter-btn:hover { background: #1e293b; }
+
+        .clear-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+        .clear-btn:hover { background: var(--bg); color: var(--text); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        .data-table thead tr {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            padding: 11px 16px;
+            text-align: left;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background .1s;
+        }
+        .data-table tbody tr:last-child { border-bottom: none; }
+        .data-table tbody tr:hover { background: #fafbfc; }
+
+        .data-table td {
+            padding: 13px 16px;
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        .row-num {
+            color: var(--text-light);
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #1d4ed8;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .user-name { font-weight: 600; font-size: 13.5px; }
+
+        .amount-cell {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text);
+        }
+        .amount-currency {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-left: 2px;
+        }
+
+        /* STATUS BADGES */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-status .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-new        { background: #dbeafe; color: #1e40af; }
+        .status-new .dot   { background: #2563eb; }
+
+        .status-processing        { background: var(--primary-light); color: #92400e; }
+        .status-processing .dot   { background: var(--primary); }
+
+        .status-completed        { background: #d1fae5; color: #065f46; }
+        .status-completed .dot   { background: #059669; }
+
+        .status-cancelled        { background: #fee2e2; color: #991b1b; }
+        .status-cancelled .dot   { background: #ef4444; }
+
+        .items-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .actions-cell { text-align: right; white-space: nowrap; }
+
+        .badge-status { cursor: pointer; }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 7px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all .15s;
+            text-decoration: none;
+        }
+        .action-btn + .action-btn { margin-left: 4px; }
+
+        .action-btn-view   { background: #dbeafe; color: #1d4ed8; }
+        .action-btn-view:hover { background: #bfdbfe; color: #1e40af; }
+
+        .action-btn-edit   { background: #ede9fe; color: #5b21b6; }
+        .action-btn-edit:hover { background: #ddd6fe; color: #4c1d95; }
+
+        .action-btn-delete { background: var(--danger-light); color: #b91c1c; }
+        .action-btn-delete:hover { background: #fecaca; color: #991b1b; }
+
+        .empty-state {
+            padding: 60px 24px;
+            text-align: center;
+        }
+        .empty-icon {
+            width: 64px; height: 64px;
+            background: var(--bg);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            color: var(--text-light);
+            margin: 0 auto 16px;
+        }
+        .empty-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+        .empty-text { font-size: 13.5px; color: var(--text-muted); }
+
+        .table-footer {
+            padding: 12px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg);
+        }
+        .table-count { font-size: 12.5px; color: var(--text-muted); }
+        .table-count strong { color: var(--text); }
+
+        @media (max-width: 1100px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; }
+            .stats-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='orders')}"></div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a href="#">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Buyurtmalar</span>
+        </nav>
+        <div class="topbar-actions">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Buyurtmalar</h1>
+                <p class="page-subtitle">Barcha mijoz buyurtmalarini kuzatish va boshqarish</p>
+            </div>
+            <a th:href="@{/orders/create}" class="btn-primary-custom">
+                <i class="bi bi-plus-lg"></i> Yangi buyurtma
+            </a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${orders.totalElements}">0</div>
+                    <div class="stat-label">Jami buyurtmalar</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="stat-value"
+                         th:text="${activeCount}">0</div>
+                    <div class="stat-label">Faol buyurtmalar</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="bi bi-check2-circle"></i></div>
+                <div>
+                    <div class="stat-value"
+                         th:text="${completedCount}">0</div>
+                    <div class="stat-label">Bajarilgan</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+                <div>
+                    <div class="stat-value"
+                         th:text="${cancelledCount}">0</div>
+                    <div class="stat-label">Bekor qilingan</div>
+                </div>
+            </div>
+        </div>
+        <!-- TABLE CARD -->
+        <div class="card">
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar p-3 bg-white rounded shadow-sm mb-4">
+                <form th:action="@{/orders}" method="get" class="row g-3 align-items-end">
+
+                    <div class="col-lg-3 col-md-4">
+                        <label class="small fw-bold text-muted mb-1">Mijoz ismi</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" name="userFullName" th:value="${criteria.userFullName}"
+                                   class="form-control border-start-0" placeholder="Qidirish...">
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <label class="small fw-bold text-muted mb-1">Min. Summa</label>
+                        <input type="number" name="minAmount" th:value="${criteria.minAmount}"
+                               class="form-control form-control-sm" placeholder="0.00">
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <label class="small fw-bold text-muted mb-1">Dan</label>
+                        <input type="date" name="dateFrom" th:value="${criteria.dateFrom}" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <label class="small fw-bold text-muted mb-1">Gacha</label>
+                        <input type="date" name="dateTo" th:value="${criteria.dateTo}" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <label class="small fw-bold text-muted mb-1">Status</label>
+                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">Barchasi</option>
+                            <option th:each="st : ${statuses}"
+                                    th:value="${st}"
+                                    th:text="${st.displayName}"
+                                    th:selected="${criteria.status == st}"></option>
+                        </select>
+                    </div>
+
+
+
+                    <div class="col-lg-1 col-md-4 d-flex gap-2">
+                        <button type="submit" class="filter-btn" title="Filtrlash">
+                            <i class="bi bi-funnel-fill"></i>
+                        </button>
+                        <a th:href="@{/orders}" class="btn btn-outline-secondary btn-sm px-3 flex-fill" title="Tozalash">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- TABLE -->
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th style="width:50px;">№</th>
+                        <th>Mijoz</th>
+                        <th>Mahsulotlar</th>
+                        <th>Umumiy summa</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order, iter : ${orders}">
+                        <td class="row-num" th:text="${iter.count}">1</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar"
+                                     th:text="${(order.userFullName != null && !order.userFullName.isEmpty()) ? #strings.substring(order.userFullName, 0, 1).toUpperCase() : '?' }">
+                                    A
+                                </div>
+                                <span class="user-name" th:text="${order.userFullName}">Ali Valiyev</span>
+                            </div>
+                        </td>
+                        <td>
+                                <span class="items-count">
+                                    <i class="bi bi-box" style="font-size:11px;"></i>
+                                    <span th:text="${order.items.size()} + ' ta'">3 ta</span>
+                                </span>
+                        </td>
+                        <td class="amount-cell">
+                            <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 0, 'POINT')}">150,000</span>
+                            <span class="amount-currency">so'm</span>
+                        </td>
+                        <td>
+                                <span th:switch="${order.status.name()}">
+                                    <span th:case="'NEW'" class="badge-status status-new">
+                                        <span class="dot"></span> Yangi
+                                    </span>
+                                    <span th:case="'PROCESSING'" class="badge-status status-processing">
+                                        <span class="dot"></span> Jarayonda
+                                    </span>
+                                    <span th:case="'COMPLETED'" class="badge-status status-completed">
+                                        <span class="dot"></span> Bajarilgan
+                                    </span>
+                                    <span th:case="'CANCELLED'" class="badge-status status-cancelled">
+                                        <span class="dot"></span> Bekor qilingan
+                                    </span>
+                                </span>
+                        </td>
+                        <td class="actions-cell">
+                            <a th:if="${order.status.name() != 'CANCELLED' && order.status.name() != 'COMPLETED'}"
+                               th:href="@{/orders/update/{id}(id=${order.id})}"
+                               class="action-btn action-btn-edit"
+                               title="Tahrirlash">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a th:if="${order.status.name() == 'NEW'}"
+                               th:href="@{/orders/delete/{id}(id=${order.id})}"
+                               onclick="return confirm('Haqiqatdan ham o\'chirmoqchimisiz?')"
+                               class="action-btn action-btn-delete"
+                               title="O'chirish">
+                                <i class="bi bi-trash"></i>
+                            </a>
+
+                            <span th:if="${order.status.name() == 'COMPLETED' || order.status.name() == 'CANCELLED'}"
+                                  class="text-muted" title="Tahrirlash taqiqlangan">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <span th:if="${order.status.name() == 'PROCESSING'}" class="text-muted">
+                                <i class="bi bi-shield-lock" title="Jarayondagi buyurtmani o'chirib bo'lmaydi"></i>
+                            </span>
+
+                        </td>
+                    </tr>
+
+                    <!-- EMPTY STATE -->
+                    <tr th:if="${#lists.isEmpty(orders)}">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-cart-x"></i></div>
+                                <div class="empty-title">Buyurtmalar topilmadi</div>
+                                <div class="empty-text">Qidiruvni o'zgartirib ko'ring yoki yangi buyurtma qo'shing.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TABLE FOOTER -->
+            <div class="table-footer" th:unless="${#lists.isEmpty(orders)}">
+                <div class="table-count">
+                    Jami <strong th:text="${orders.totalElements}">0</strong> ta buyurtma
+                </div>
+            </div>
+
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/orders(page=${currentPage - 1}, status=${criteria.status}, userFullName=${criteria.userFullName})}">Orqaga</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/orders(page=${i}, status=${criteria.status}, userFullName=${criteria.userFullName})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/orders(page=${currentPage + 1}, status=${criteria.status}, userFullName=${criteria.userFullName})}">Oldinga</a>
+                    </li>
+                </ul>
+            </nav>
+
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

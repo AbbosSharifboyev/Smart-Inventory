@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foydalanuvchilar | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b; --primary-dark: #d97706; --primary-light: #fef3c7;
+            --bg: #f1f5f9; --surface: #ffffff; --surface-2: #f8fafc;
+            --border: #e2e8f0; --text: #0f172a; --text-muted: #64748b; --text-light: #94a3b8;
+            --success: #10b981; --success-light: #d1fae5;
+            --danger: #ef4444; --danger-light: #fee2e2;
+            --blue: #3b82f6; --blue-light: #dbeafe;
+            --purple: #8b5cf6; --purple-light: #ede9fe;
+            --amber-light: #fef3c7;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* topbar */
+        .topbar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 0 32px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .breadcrumb-nav { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+        .breadcrumb-nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color .15s; }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 11px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 8px; }
+        .topbar-btn { width:36px;height:36px;border:1px solid var(--border);background:var(--surface);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:15px;transition:all .15s;text-decoration:none;cursor:pointer; }
+        .topbar-btn:hover { background:var(--bg);color:var(--text); }
+        .notif-dot { position:relative; }
+        .notif-dot::after { content:'';position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:1.5px solid #fff; }
+
+        /* page body */
+        .page-body { flex:1; padding:32px; animation: fadeUp .3s ease both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+
+        .page-header { display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap; }
+        .page-title   { font-size:22px;font-weight:800;letter-spacing:-.4px; }
+        .page-subtitle { font-size:13.5px;color:var(--text-muted);margin-top:4px;font-weight:500; }
+
+        /* primary btn */
+        .btn-primary-custom {
+            display:inline-flex;align-items:center;gap:7px;
+            padding:10px 20px;font-size:13.5px;font-family:inherit;font-weight:700;
+            background:var(--primary);color:#fff;border:none;border-radius:10px;
+            cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;
+            box-shadow:0 1px 4px rgba(245,158,11,.25);
+        }
+        .btn-primary-custom:hover { background:var(--primary-dark);color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(245,158,11,.3); }
+
+        /* stats */
+        .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px; }
+        .stat-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:all .2s; }
+        .stat-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.08);transform:translateY(-1px); }
+        .stat-icon { width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+        .si-yellow { background:var(--primary-light);color:var(--primary-dark); }
+        .si-green  { background:var(--success-light);color:#059669; }
+        .si-blue   { background:var(--blue-light);color:var(--blue); }
+        .si-red    { background:var(--danger-light);color:var(--danger); }
+        .stat-value { font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1; }
+        .stat-label { font-size:12px;color:var(--text-muted);margin-top:3px;font-weight:500; }
+
+        /* card */
+        .card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden; }
+
+        /* filter bar */
+        .filter-bar { padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+        .search-wrap { position:relative;flex:1;min-width:200px; }
+        .search-icon { position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:14px;pointer-events:none; }
+        .search-input { width:100%;padding:9px 14px 9px 36px;font-size:13.5px;font-family:inherit;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:8px;outline:none;transition:border-color .15s,box-shadow .15s; }
+        .search-input::placeholder { color:var(--text-light); }
+        .search-input:focus { border-color:var(--primary);box-shadow:0 0 0 3px rgba(245,158,11,.1); }
+        .filter-select { padding:9px 32px 9px 12px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:8px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:16px; }
+        .filter-select:focus { border-color:var(--primary); }
+        .filter-btn { display:inline-flex;align-items:center;gap:6px;padding:9px 16px;font-size:13px;font-family:inherit;font-weight:600;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;transition:all .15s; }
+        .filter-btn:hover { border-color:var(--primary);color:var(--primary-dark);background:var(--primary-light); }
+
+        /* table */
+        .data-table { width:100%;border-collapse:collapse; }
+        .data-table thead th { background:var(--surface-2);color:var(--text-light);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:12px 18px;border-bottom:1px solid var(--border);white-space:nowrap; }
+        .data-table tbody tr { border-bottom:1px solid var(--border);transition:background .12s; }
+        .data-table tbody tr:last-child { border-bottom:none; }
+        .data-table tbody tr:hover { background:#fafbfc; }
+        .data-table tbody td { padding:13px 18px;font-size:13.5px;color:var(--text);vertical-align:middle; }
+
+        /* user cell */
+        .user-cell { display:flex;align-items:center;gap:11px; }
+        .user-avatar {
+            width:36px;height:36px;border-radius:10px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+            background: linear-gradient(135deg, var(--primary), #ef4444);
+        }
+        .user-avatar.blue   { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
+        .user-avatar.green  { background: linear-gradient(135deg, #10b981, #3b82f6); }
+        .user-name   { font-size:13.5px;font-weight:700;color:var(--text); }
+        .user-email  { font-size:12px;color:var(--text-muted);margin-top:1px; }
+
+        /* role badge */
+        .role-badge { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700; }
+        .role-admin   { background:var(--primary-light);color:#92400e;border:1px solid #fde68a; }
+        .role-manager { background:var(--blue-light);color:#1e40af;border:1px solid #bfdbfe; }
+        .role-user    { background:var(--success-light);color:#065f46;border:1px solid #a7f3d0; }
+
+        /* status badge */
+        .status-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .status-active  { background:var(--success-light);color:#065f46;border:1px solid #a7f3d0; }
+        .status-inactive{ background:var(--danger-light);color:#b91c1c;border:1px solid #fecaca; }
+        .status-dot { width:6px;height:6px;border-radius:50%; }
+        .dot-green { background:var(--success); }
+        .dot-red   { background:var(--danger); }
+
+        /* permissions */
+        .perm-tags { display:flex;flex-wrap:wrap;gap:4px; }
+        .perm-tag { padding:2px 7px;background:var(--purple-light);color:#4c1d95;border-radius:5px;font-size:10.5px;font-weight:600; }
+        .perm-more { padding:2px 7px;background:var(--surface-2);color:var(--text-light);border-radius:5px;font-size:10.5px;font-weight:600;border:1px solid var(--border); }
+
+        /* actions */
+        .actions-cell { text-align:right;white-space:nowrap; }
+        .action-btn { display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-size:14px;cursor:pointer;border:none;transition:all .15s;text-decoration:none; }
+        .action-btn + .action-btn { margin-left:4px; }
+        .action-btn-edit   { background:#ede9fe;color:#5b21b6; }
+        .action-btn-edit:hover   { background:#ddd6fe;color:#4c1d95; }
+        .action-btn-delete { background:var(--danger-light);color:#b91c1c; }
+        .action-btn-delete:hover { background:#fecaca;color:#991b1b; }
+
+        /* empty state */
+        .empty-state { padding:64px 24px;text-align:center; }
+        .empty-icon { width:64px;height:64px;background:var(--bg);border:1px solid var(--border);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--text-light);margin:0 auto 16px; }
+        .empty-title { font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px; }
+        .empty-text  { font-size:13.5px;color:var(--text-muted); }
+
+        /* table footer + pagination */
+        .table-footer { padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px; }
+        .table-count { font-size:12.5px;color:var(--text-muted); }
+        .table-count strong { color:var(--text);font-weight:700; }
+
+        .pagination { display:flex;align-items:center;gap:4px; }
+        .page-btn {
+            min-width:32px;height:32px;padding:0 8px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:13px;font-weight:600;font-family:inherit;
+            background:var(--surface);border:1.5px solid var(--border);
+            border-radius:8px;color:var(--text-muted);cursor:pointer;
+            text-decoration:none;transition:all .15s;
+        }
+        .page-btn:hover { border-color:var(--primary);color:var(--primary-dark); }
+        .page-btn.active { background:var(--primary);border-color:var(--primary);color:#fff; }
+        .page-btn:disabled { opacity:.4;cursor:not-allowed; }
+
+        @media (max-width:1100px) { .stats-row { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:768px) { .main-content { margin-left:0; } .page-body { padding:20px; } .stats-row { grid-template-columns:1fr 1fr; } }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='users')}"></div>
+
+<div class="main-content">
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a href="#">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Foydalanuvchilar</span>
+        </nav>
+        <div class="topbar-right">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Foydalanuvchilar</h1>
+                <p class="page-subtitle">Tizim foydalanuvchilarini boshqarish</p>
+            </div>
+            <a th:href="@{/users/create}" class="btn-primary-custom">
+                <i class="bi bi-person-plus-fill"></i> Yangi foydalanuvchi
+            </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon si-yellow"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${totalCount}">0</div>
+                    <div class="stat-label">Jami foydalanuvchi</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-green"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${activeCount}">0</div>
+                    <div class="stat-label">Faol</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-blue"><i class="bi bi-person-gear"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${adminCount}">0</div>
+                    <div class="stat-label">Adminlar</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-red"><i class="bi bi-person-x-fill"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${blockedCount}">0</div>
+                    <div class="stat-label">Bloklangan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table card -->
+        <div class="card">
+
+            <!-- Filter -->
+            <div class="filter-bar">
+                <form th:action="@{/users}" method="get" style="display:flex;gap:10px;flex:1;align-items:center;flex-wrap:wrap;">
+                    <div class="search-wrap">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" name="username"
+                               th:value="${criteria.username}"
+                               class="search-input"
+                               placeholder="Username yoki email bo'yicha qidirish...">
+                    </div>
+                    <select name="role" class="filter-select" onchange="this.form.submit()">
+                        <option value="">Barcha rollar</option>
+                        <option value="ADMIN"   th:selected="${criteria.role?.name() == 'ADMIN'}">Admin</option>
+                        <option value="MANAGER" th:selected="${criteria.role?.name() == 'MANAGER'}">Manager</option>
+                        <option value="USER"    th:selected="${criteria.role?.name() == 'USER'}">User</option>
+                    </select>
+                    <button type="submit" class="filter-btn">
+                        <i class="bi bi-funnel"></i> Filtrlash
+                    </button>
+                    <a th:href="@{/users}" class="filter-btn" style="text-decoration:none;background:transparent;">
+                        <i class="bi bi-x"></i> Tozalash
+                    </a>
+                </form>
+            </div>
+
+            <!-- Table -->
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th style="width:50px;text-align:center;">№</th>
+                        <th>Foydalanuvchi</th>
+                        <th>Rol</th>
+                        <th>Holat</th>
+                        <th>Ruxsatlar</th>
+                        <th style="text-align:right;padding-right:18px;">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user, iter : ${users}">
+                        <td style="text-align:center;font-size:12px;color:var(--text-light);font-weight:600;" th:text="${(page.number * page.size) + iter.count}">1</td>
+
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar"
+                                     th:classappend="${user.role?.name() == 'MANAGER'} ? ' blue' : (${user.role?.name() == 'USER'} ? ' green' : '')"
+                                     th:text="${user.fullName != null && !user.fullName.isEmpty() ? user.fullName.substring(0,1).toUpperCase() : user.username.substring(0,1).toUpperCase()}">
+                                    A
+                                </div>
+                                <div>
+                                    <div class="user-name" th:text="${user.fullName ?: user.username}">Ism</div>
+                                    <div class="user-email" th:text="${user.email}">email</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                                <span th:switch="${user.role?.name()}">
+                                    <span th:case="'ADMIN'"   class="role-badge role-admin"><i class="bi bi-star-fill" style="font-size:10px;"></i> ADMIN</span>
+                                    <span th:case="'MANAGER'" class="role-badge role-manager"><i class="bi bi-person-badge-fill" style="font-size:10px;"></i> MANAGER</span>
+                                    <span th:case="'USER'"    class="role-badge role-user"><i class="bi bi-person-fill" style="font-size:10px;"></i> USER</span>
+                                </span>
+                        </td>
+
+                        <td>
+                                <span th:if="${user.enabled}" class="status-badge status-active">
+                                    <span class="status-dot dot-green"></span> Faol
+                                </span>
+                            <span th:unless="${user.enabled}" class="status-badge status-inactive">
+                                    <span class="status-dot dot-red"></span> Bloklangan
+                                </span>
+                        </td>
+
+                        <td>
+                            <div class="perm-tags" th:if="${user.permissions != null and !user.permissions.isEmpty()}">
+                                    <span th:each="p, pi : ${user.permissions}"
+                                          th:if="${pi.index < 2}"
+                                          class="perm-tag"
+                                          th:text="${p.name}">PERM</span>
+                                <span th:if="${user.permissions.size() > 2}"
+                                      class="perm-more"
+                                      th:text="'+' + (${user.permissions.size() - 2})">+n</span>
+                            </div>
+                            <span th:unless="${user.permissions != null and !user.permissions.isEmpty()}"
+                                  style="font-size:12px;color:var(--text-light);font-style:italic;">Yo'q</span>
+                        </td>
+
+                        <td class="actions-cell" style="padding-right:18px;">
+                            <a th:href="@{/users/update/{id}(id=${user.id})}"
+                               th:if="${canUserManage}"
+                               class="action-btn action-btn-edit" title="Tahrirlash">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{/users/delete/{id}(id=${user.id})}"
+                               th:if="${canUserManage}"
+                               onclick="return confirm('Foydalanuvchini o\'chirmoqchimisiz?')"
+                               class="action-btn action-btn-delete" title="O'chirish">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-people"></i></div>
+                                <div class="empty-title">Foydalanuvchilar topilmadi</div>
+                                <div class="empty-text">Qidiruvni o'zgartiring yoki yangi foydalanuvchi qo'shing.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer + Pagination -->
+            <div class="table-footer" th:unless="${#lists.isEmpty(users)}">
+                <div class="table-count">
+                    Sahifa: <strong th:text="${page.number + 1}">1</strong> / <strong th:text="${page.totalPages}">1</strong>
+                    (<strong th:text="${users.size()}">0</strong> ta foydalanuvchi ko'rsatilyapti)
+                </div>
+
+                <nav th:if="${page.totalPages > 1}">
+                    <ul class="pagination pagination-sm mb-0 shadow-sm" style="display: flex; gap: 5px; list-style: none;">
+
+                        <li class="page-item"
+                            th:classappend="${!page.hasPrevious()} ? 'disabled'"
+                            th:style="${!page.hasPrevious()} ? 'pointer-events: none; opacity: 0.5;'">
+                            <a class="page-link"
+                               th:href="@{/users(page=${page.number - 1}, username=${criteria.username})}"
+                               style="border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none; color: var(--muted);">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                            th:classappend="${i == page.number} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/users(page=${i}, username=${criteria.username})}"
+                               th:text="${i + 1}"
+                               th:style="${i == page.number} ? 'background: var(--primary); color: white; border-radius: 6px; padding: 6px 12px; border: 1px solid var(--primary); text-decoration: none;' : 'background: var(--surface-2); color: var(--text); border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none;'">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:classappend="${!page.hasNext()} ? 'disabled'"
+                            th:style="${!page.hasNext()} ? 'pointer-events: none; opacity: 0.5;'">
+                            <a class="page-link"
+                               th:href="@{/users(page=${page.number + 1}, username=${criteria.username})}"
+                               style="border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none; color: var(--muted);">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

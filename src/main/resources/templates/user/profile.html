@@ -1,0 +1,240 @@
+<!-- ══════════════════════════════════════
+     user/profile.html
+══════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilim | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--sidebar-width:260px;--primary:#f59e0b;--primary-dark:#d97706;--primary-light:#fef3c7;--bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--border:#e2e8f0;--text:#0f172a;--text-muted:#64748b;--text-light:#94a3b8;--success:#10b981;--success-light:#d1fae5;--danger:#ef4444;--danger-light:#fee2e2;--blue:#3b82f6;--blue-light:#dbeafe;--purple:#8b5cf6;--purple-light:#ede9fe;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.05);}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .main-content{margin-left:var(--sidebar-width);min-height:100vh;display:flex;flex-direction:column;}
+        .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+        .breadcrumb-nav{display:flex;align-items:center;gap:6px;font-size:13.5px;}
+        .breadcrumb-nav a{color:var(--text-muted);text-decoration:none;font-weight:500;}
+        .breadcrumb-nav a:hover{color:var(--text);}
+        .breadcrumb-sep{color:var(--text-light);font-size:11px;}
+        .breadcrumb-current{color:var(--text);font-weight:600;}
+        .topbar-right{display:flex;align-items:center;gap:8px;}
+        .topbar-btn{width:36px;height:36px;border:1px solid var(--border);background:var(--surface);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:15px;transition:all .15s;text-decoration:none;}
+        .topbar-btn:hover{background:var(--bg);color:var(--text);}
+        .notif-dot{position:relative;}
+        .notif-dot::after{content:'';position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:1.5px solid #fff;}
+        .page-body{flex:1;padding:32px;animation:fadeUp .3s ease both;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        .profile-layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+        .card-header-block{padding:18px 22px 0;}
+        .card-title-sm{font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:9px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+        .title-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+        .ti-yellow{background:var(--primary-light);color:var(--primary-dark);}
+        .ti-blue{background:var(--blue-light);color:var(--blue);}
+        .ti-green{background:var(--success-light);color:var(--success);}
+        .card-body-block{padding:22px;}
+        /* profile card */
+        .profile-avatar-section{text-align:center;padding:28px 22px 20px;}
+        .profile-avatar{width:88px;height:88px;border-radius:22px;background:linear-gradient(135deg,var(--primary),#ef4444);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(245,158,11,.3);}
+        .profile-name{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px;margin-bottom:4px;}
+        .profile-username{font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+        .profile-role-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:700;}
+        .rb-admin{background:var(--primary-light);color:#92400e;border:1px solid #fde68a;}
+        .rb-manager{background:var(--blue-light);color:#1e40af;border:1px solid #bfdbfe;}
+        .rb-user{background:var(--success-light);color:#065f46;border:1px solid #a7f3d0;}
+        .profile-meta{padding:0 22px 20px;display:flex;flex-direction:column;gap:10px;}
+        .meta-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;}
+        .meta-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+        .mi-yellow{background:var(--primary-light);color:var(--primary-dark);}
+        .mi-blue{background:var(--blue-light);color:var(--blue);}
+        .mi-green{background:var(--success-light);color:var(--success);}
+        .meta-label{font-size:11px;color:var(--text-muted);font-weight:500;margin-bottom:1px;}
+        .meta-value{font-size:13px;color:var(--text);font-weight:700;}
+        /* quick links */
+        .quick-links{padding:0 22px 22px;display:flex;flex-direction:column;gap:8px;}
+        .quick-link{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:9px;text-decoration:none;color:var(--text-muted);font-size:13.5px;font-weight:600;transition:all .15s;}
+        .quick-link:hover{border-color:var(--primary);color:var(--primary-dark);background:var(--primary-light);}
+        .quick-link i{font-size:14px;width:18px;text-align:center;}
+        /* form */
+        .form-group{margin-bottom:18px;}
+        .form-group:last-child{margin-bottom:0;}
+        .form-label{display:block;font-size:13px;font-weight:700;color:var(--text);margin-bottom:7px;}
+        .input-wrap{position:relative;}
+        .input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:14px;pointer-events:none;}
+        .form-control{width:100%;padding:10px 14px 10px 38px;font-size:13.5px;font-family:inherit;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:9px;outline:none;transition:border-color .15s,box-shadow .15s;}
+        .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(245,158,11,.12);}
+        .form-control.is-invalid{border-color:var(--danger);}
+        .invalid-feedback{font-size:12px;color:var(--danger);margin-top:5px;display:flex;align-items:center;gap:4px;}
+        .form-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+        .btn-row{display:flex;gap:10px;}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 20px;font-size:14px;font-family:inherit;font-weight:700;border-radius:10px;cursor:pointer;text-decoration:none;transition:all .15s;border:none;}
+        .btn-primary-custom{background:var(--primary);color:#fff;box-shadow:0 1px 4px rgba(245,158,11,.25);}
+        .btn-primary-custom:hover{background:var(--primary-dark);color:#fff;box-shadow:0 4px 14px rgba(245,158,11,.3);transform:translateY(-1px);}
+        .btn-ghost{background:var(--surface-2);color:var(--text-muted);border:1.5px solid var(--border);}
+        .btn-ghost:hover{background:var(--bg);color:var(--text);border-color:#cbd5e1;}
+        /* success alert */
+        .alert-success{display:flex;align-items:center;gap:9px;background:var(--success-light);border:1px solid #a7f3d0;border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:13.5px;color:#065f46;}
+        /* perm badges */
+        .perm-tags{display:flex;flex-wrap:wrap;gap:6px;}
+        .perm-tag{padding:4px 10px;background:var(--purple-light);color:#4c1d95;border-radius:6px;font-size:12px;font-weight:600;}
+        @media(max-width:900px){.profile-layout{grid-template-columns:1fr;}}
+        @media(max-width:768px){.main-content{margin-left:0;}.page-body{padding:20px;}}
+    </style>
+</head>
+<body>
+<div th:if="${#authorization.expression('hasAnyAuthority(''ROLE_ADMIN'', ''ROLE_MANAGER'')')}"
+     th:replace="~{fragments/sidebar :: sidebar(activePage='profile')}">
+</div>
+
+<div th:class="${#authorization.expression('hasAnyAuthority(''ROLE_ADMIN'', ''ROLE_MANAGER'')')} ? 'main-content' : 'container py-5'">
+
+    <header class="topbar" th:if="${#authorization.expression('hasAnyAuthority(''ROLE_ADMIN'', ''ROLE_MANAGER'')')}">
+        <nav class="breadcrumb-nav">
+            <a href="#">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Mening profilim</span>
+        </nav>
+        <div class="topbar-right">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <div th:unless="${#authorization.expression('hasAnyAuthority(''ROLE_ADMIN'', ''ROLE_MANAGER'')')}"
+         style="margin: 0 0 30px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
+        <h2 style="font-weight: 800; color: var(--primary); margin: 0;">Smart Store</h2>
+        <a th:href="@{/shop}" class="btn btn-ghost" style="border: 1.5px solid var(--border); padding: 8px 16px; border-radius: 10px; text-decoration: none; color: var(--text-muted); font-weight: 600;">
+            <i class="bi bi-house"></i> Magazinga qaytish
+        </a>
+    </div>
+
+    <main class="page-body">
+
+        <div style="margin-bottom:24px;">
+            <h1 style="font-size:22px;font-weight:800;letter-spacing:-.4px;">Mening profilim</h1>
+            <p style="font-size:13.5px;color:var(--text-muted);margin-top:4px;">Shaxsiy ma'lumotlaringizni ko'ring va tahrirlang.</p>
+        </div>
+
+        <!-- Success alert -->
+        <div class="alert-success" th:if="${param.success}">
+            <i class="bi bi-check-circle-fill" style="font-size:16px;"></i>
+            <span>Profil muvaffaqiyatli yangilandi!</span>
+        </div>
+
+        <div class="profile-layout">
+
+            <!-- Left: profile card -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+
+                <div class="card">
+                    <div class="profile-avatar-section">
+                        <div class="profile-avatar"
+                             th:text="${user.fullName != null && !user.fullName.isEmpty() ? user.fullName.substring(0,1).toUpperCase() : user.username.substring(0,1).toUpperCase()}">A</div>
+                        <div class="profile-name" th:text="${user.fullName ?: user.username}">Ism Familya</div>
+                        <div class="profile-username" th:text="'@' + ${user.username}">@username</div>
+                        <span th:switch="${user.role?.name()}">
+                            <span th:case="'ADMIN'"   class="profile-role-badge rb-admin"><i class="bi bi-star-fill" style="font-size:10px;"></i> ADMIN</span>
+                            <span th:case="'MANAGER'" class="profile-role-badge rb-manager"><i class="bi bi-person-badge-fill" style="font-size:10px;"></i> MANAGER</span>
+                            <span th:case="'USER'"    class="profile-role-badge rb-user"><i class="bi bi-person-fill" style="font-size:10px;"></i> USER</span>
+                        </span>
+                    </div>
+                    <div class="profile-meta">
+                        <div class="meta-row">
+                            <div class="meta-icon mi-blue"><i class="bi bi-envelope-fill"></i></div>
+                            <div>
+                                <div class="meta-label">Email</div>
+                                <div class="meta-value" th:text="${user.email}">—</div>
+                            </div>
+                        </div>
+                        <div class="meta-row">
+                            <div class="meta-icon mi-green"><i class="bi bi-activity"></i></div>
+                            <div>
+                                <div class="meta-label">Holat</div>
+                                <div class="meta-value" th:text="${user.enabled ? 'Faol' : 'Bloklangan'}">Faol</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="quick-links">
+                        <a th:href="@{/users/change-password}" class="quick-link">
+                            <i class="bi bi-lock"></i> Parolni o'zgartirish
+                        </a>
+                        <a th:href="@{/auth/logout}" class="quick-link" style="color:var(--danger);"
+                           onmouseover="this.style.borderColor='var(--danger)';this.style.background='var(--danger-light)'"
+                           onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface-2)'">
+                            <i class="bi bi-box-arrow-right"></i> Tizimdan chiqish
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Permissions -->
+                <div class="card" th:if="${user.permissions != null and !user.permissions.isEmpty()}">
+                    <div class="card-header-block">
+                        <div class="card-title-sm">
+                            <div class="title-icon" style="background:var(--purple-light);color:var(--purple);"><i class="bi bi-key-fill"></i></div>
+                            Ruxsatlar
+                        </div>
+                    </div>
+                    <div class="card-body-block">
+                        <div class="perm-tags">
+                            <span th:each="p : ${user.permissions}" class="perm-tag" th:text="${p.name}">PERM</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right: edit form -->
+            <div class="card">
+                <div class="card-header-block">
+                    <div class="card-title-sm">
+                        <div class="title-icon ti-yellow"><i class="bi bi-pencil-fill"></i></div>
+                        Profil ma'lumotlarini tahrirlash
+                    </div>
+                </div>
+                <div class="card-body-block">
+
+                    <form th:action="@{/users/profile/update}" th:object="${user}" method="post">
+
+                        <div class="form-group">
+                            <label class="form-label">To'liq ism</label>
+                            <div class="input-wrap">
+                                <i class="bi bi-person input-icon"></i>
+                                <input type="text" th:field="*{fullName}" class="form-control" placeholder="Ism Familya">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <div class="input-wrap">
+                                <i class="bi bi-envelope input-icon"></i>
+                                <input type="email" th:field="*{email}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('email')}?' is-invalid':''"
+                                       placeholder="email@example.com">
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}">
+                                <i class="bi bi-exclamation-circle-fill"></i><span th:errors="*{email}"></span>
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <div class="btn-row">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-check2-circle"></i> Saqlash
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

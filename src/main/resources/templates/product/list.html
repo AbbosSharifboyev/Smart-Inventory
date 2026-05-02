@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahsulotlar | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fef3c7;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --success: #10b981;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* MAIN */
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* TOPBAR */
+        .topbar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 0 32px; height: 64px; display: flex; align-items: center;
+            justify-content: space-between; position: sticky; top: 0; z-index: 50;
+        }
+        .breadcrumb-nav { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+        .breadcrumb-nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color .15s; }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 12px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        .topbar-btn {
+            width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-muted); font-size: 15px; transition: all .15s; text-decoration: none;
+        }
+        .topbar-btn:hover { background: var(--bg); color: var(--text); }
+        .notif-dot { position: relative; }
+        .notif-dot::after {
+            content: ''; position: absolute; top: 7px; right: 7px;
+            width: 7px; height: 7px; background: var(--danger); border-radius: 50%; border: 1.5px solid #fff;
+        }
+
+        /* PAGE BODY */
+        .page-body { flex: 1; padding: 32px; animation: fadeUp .3s ease both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+        .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 3px; }
+
+        /* BTN */
+        .btn-add {
+            display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
+            font-size: 13.5px; font-family: inherit; font-weight: 600;
+            background: var(--primary); color: #fff; border: none; border-radius: 9px;
+            cursor: pointer; text-decoration: none; transition: all .15s; white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(245,158,11,.3);
+        }
+        .btn-add:hover { background: var(--primary-dark); transform: translateY(-1px); color: #fff; box-shadow: 0 4px 12px rgba(245,158,11,.35); }
+
+        /* STATS */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow);
+        }
+        .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+        .stat-icon.yellow { background: var(--primary-light); color: var(--primary-dark); }
+        .stat-icon.green  { background: #d1fae5; color: #059669; }
+        .stat-icon.blue   { background: #dbeafe; color: #2563eb; }
+        .stat-icon.purple { background: #ede9fe; color: #7c3aed; }
+        .stat-value { font-size: 20px; font-weight: 700; line-height: 1; }
+        .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+
+        /* CARD */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+
+        /* FILTER BAR */
+        .filter-bar { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .search-wrap { position: relative; flex: 1; min-width: 200px; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 14px; pointer-events: none; }
+        .search-input {
+            width: 100%; padding: 9px 14px 9px 36px; font-size: 13.5px; font-family: inherit;
+            color: var(--text); background: var(--bg); border: 1.5px solid var(--border);
+            border-radius: 8px; outline: none; transition: border-color .15s, box-shadow .15s;
+        }
+        .search-input:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,.12); }
+        .search-input::placeholder { color: var(--text-light); }
+
+        .select-input {
+            padding: 9px 14px; font-size: 13.5px; font-family: inherit; color: var(--text);
+            background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
+            outline: none; transition: border-color .15s; cursor: pointer; min-width: 160px;
+        }
+        .select-input:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,.12); }
+
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px; padding: 9px 16px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 600;
+            background: var(--text);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .filter-btn:hover { background: #1e293b; }
+        .clear-btn {
+            display: inline-flex; align-items: center; gap: 5px; padding: 9px 14px;
+            font-size: 13px; font-family: inherit; font-weight: 500; background: transparent;
+            color: var(--text-muted); border: 1.5px solid var(--border); border-radius: 8px;
+            cursor: pointer; text-decoration: none; transition: all .15s;
+        }
+        .clear-btn:hover { background: var(--bg); color: var(--text); }
+
+        /* TABLE */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table thead th {
+            padding: 11px 14px; font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; color: var(--text-muted); background: var(--bg);
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+        }
+        .data-table thead th:first-child { padding-left: 22px; }
+        .data-table thead th:last-child { padding-right: 22px; text-align: right; }
+        .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+        .data-table tbody tr:last-child { border-bottom: none; }
+        .data-table tbody tr:hover { background: #fafbfc; }
+        .data-table tbody td { padding: 13px 14px; font-size: 13.5px; vertical-align: middle; }
+        .data-table tbody td:first-child { padding-left: 22px; }
+        .data-table tbody td:last-child { padding-right: 22px; }
+
+        /* PRODUCT IMAGE */
+        .prod-img { width: 44px; height: 44px; border-radius: 9px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+        .prod-img-placeholder {
+            width: 44px; height: 44px; border-radius: 9px; background: var(--bg);
+            border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: var(--text-light);
+        }
+        .modal-backdrop.show {
+            opacity: 0.85; /* Fonni quyuqroq qiladi */
+            backdrop-filter: blur(8px); /* Orqa fonni xiralashtiradi */
+        }
+
+        /* Rasm ochilganda kattalashish animatsiyasi */
+        #modalFullImage {
+            animation: zoomIn 0.3s ease;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .prod-img:hover {
+            transform: scale(1.1);
+            transition: 0.3s;
+        }
+        .prod-info { display: flex; align-items: center; gap: 12px; }
+        .prod-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+        .prod-id   { font-size: 11px; color: var(--text-light); margin-top: 2px; font-family: monospace; }
+
+        /* PRICE */
+        .price-val { font-size: 14px; font-weight: 800; color: var(--primary-dark); }
+
+        /* QUANTITY BADGE */
+        .qty-badge {
+            display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+            border-radius: 20px; font-size: 12px; font-weight: 600;
+        }
+        .qty-ok   { background: #d1fae5; color: #065f46; }
+        .qty-low  { background: #fef3c7; color: #92400e; }
+        .qty-zero { background: var(--danger-light); color: #b91c1c; }
+
+        /* CATEGORY TAG */
+        .cat-tag {
+            display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px;
+            background: #ede9fe; color: #5b21b6; border-radius: 20px; font-size: 12px; font-weight: 600;
+        }
+
+        /* ROW NUM */
+        .row-num { font-size: 12px; font-weight: 600; color: var(--text-light); }
+
+        /* ACTION BUTTONS */
+        .actions-cell { text-align: right; white-space: nowrap; }
+        .action-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 7px; font-size: 14px;
+            cursor: pointer; border: none; transition: all .15s; text-decoration: none;
+        }
+        .action-btn + .action-btn { margin-left: 4px; }
+        .action-btn-edit   { background: #ede9fe; color: #5b21b6; }
+        .action-btn-edit:hover   { background: #ddd6fe; }
+        .action-btn-delete { background: var(--danger-light); color: #b91c1c; }
+        .action-btn-delete:hover { background: #fecaca; }
+
+        /* EMPTY */
+        .empty-state { padding: 60px 24px; text-align: center; }
+        .empty-icon { width: 64px; height: 64px; background: var(--bg); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--text-light); margin: 0 auto 16px; }
+        .empty-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+        .empty-text  { font-size: 13.5px; color: var(--text-muted); }
+
+        /* TABLE FOOTER */
+        .table-footer { padding: 12px 22px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg); }
+        .table-count { font-size: 12.5px; color: var(--text-muted); }
+        .table-count strong { color: var(--text); }
+
+        @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 768px)  { .main-content { margin-left: 0; } .stats-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='products')}"></div>
+
+<div class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a href="/">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Mahsulotlar</span>
+        </nav>
+        <div class="topbar-actions">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Mahsulotlar</h1>
+                <p class="page-subtitle">Barcha mahsulotlarni boshqarish bo'limi</p>
+            </div>
+            <a th:href="@{/products/create}" class="btn-add"
+               th:if="${canCreate}">
+                <i class="bi bi-plus-lg"></i> Yangi mahsulot
+            </a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="bi bi-box-seam"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${totalProducts}">0</div>
+                    <div class="stat-label">Jami mahsulotlar</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${availableProducts}">0</div>
+                    <div class="stat-label">Mavjud mahsulotlar</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="bi bi-exclamation-triangle"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${#lists.size(products.?[quantity <= 5])}">0</div>
+                    <div class="stat-label">Kam qolgan</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="bi bi-tag"></i></div>
+                <div>
+                    <div class="stat-value" th:text="${categories.size()}">—</div>
+                    <div class="stat-label">Kategoriyalar</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE CARD -->
+        <div class="card">
+
+            <div class="filter-bar">
+                <form th:action="@{/products}" method="get" style="display:flex;gap:10px;flex:1;align-items:center;flex-wrap:wrap;">
+
+                    <div class="search-wrap" style="flex: 1; min-width: 200px;">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" name="name" th:value="${criteria.name}"
+                               class="search-input" placeholder="Mahsulot nomi...">
+                    </div>
+
+                    <select name="categoryId" class="select-input">
+                        <option value="">Barcha kategoriyalar</option>
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat.id}"
+                                th:text="${cat.name}"
+                                th:selected="${cat.id == criteria.categoryId}"></option>
+                    </select>
+
+                    <input type="number" name="minPrice" th:value="${criteria.minPrice}"
+                           class="select-input" placeholder="Min narx" style="width: 100px;">
+
+                    <input type="number" name="maxPrice" th:value="${criteria.maxPrice}"
+                           class="select-input" placeholder="Max narx" style="width: 100px;">
+
+                    <div class="col-lg-1 col-md-4 d-flex gap-2">
+                    <button type="submit" class="filter-btn" title="Filtrlash">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                    <a th:href="@{/products}" class="btn btn-outline-secondary btn-sm px-3 flex-fill" title="Tozalash">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TABLE -->
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th style="width:44px;">№</th>
+                        <th>Mahsulot</th>
+                        <th>Narxi</th>
+                        <th>Miqdori</th>
+                        <th>Kategoriya</th>
+                        <th style="text-align:right;">Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <!-- DATA ROWS -->
+                    <tr th:each="product, iter : ${products}">
+                        <td class="row-num" th:text="${iter.count}">1</td>
+                        <td>
+                            <div class="prod-info">
+                                <img th:if="${product.imagePath != null and !product.imagePath.isEmpty()}"
+                                     th:src="@{'/uploads/' + ${product.imagePath}}"
+                                     th:data-url="@{'/uploads/' + ${product.imagePath}}"
+                                     th:data-title="${product.name}"
+                                     onclick="openProductModal(this)"
+                                     class="prod-img"
+                                     style="cursor: pointer; width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
+                                     alt="product">
+
+                                <div class="prod-img-placeholder" th:unless="${product.imagePath != null and !product.imagePath.isEmpty()}">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+                                <div>
+                                    <div class="prod-name" th:text="${product.name}">Mahsulot nomi</div>
+                                    <div class="prod-id" th:text="'#' + ${product.id.toString().substring(0,8)}">ID</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="price-val" th:text="${#numbers.formatDecimal(product.price,1,'COMMA',0,'POINT')} + ' so\'m'">0 so'm</span>
+                        </td>
+                        <td>
+                                <span th:if="${product.quantity > 5}"
+                                      class="qty-badge qty-ok">
+                                    <i class="bi bi-circle-fill" style="font-size:7px;"></i>
+                                    <span th:text="${product.quantity}">0</span> ta
+                                </span>
+                            <span th:if="${product.quantity <= 5 and product.quantity > 0}"
+                                  class="qty-badge qty-low">
+                                    <i class="bi bi-exclamation-circle" style="font-size:10px;"></i>
+                                    <span th:text="${product.quantity}">0</span> ta
+                                </span>
+                            <span th:if="${product.quantity == null or product.quantity == 0}"
+                                  class="qty-badge qty-zero">
+                                    <i class="bi bi-x-circle" style="font-size:10px;"></i> Tugagan
+                                </span>
+                        </td>
+                        <td>
+                                <span class="cat-tag">
+                                    <i class="bi bi-tag" style="font-size:10px;"></i>
+                                    <span th:text="${product.categoryName}">Kategoriya</span>
+                                </span>
+                        </td>
+                        <td class="actions-cell">
+                            <a th:href="@{/products/update/{id}(id=${product.id})}"
+                               th:if="${canUpdate}"
+                               class="action-btn action-btn-edit" title="Tahrirlash">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{/products/delete/{id}(id=${product.id})}"
+                               th:if="${canDelete}"
+                               onclick="return confirm('Mahsulotni o\'chirmoqchimisiz?')"
+                               class="action-btn action-btn-delete" title="O'chirish">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- EMPTY STATE -->
+                    <tr th:if="${#lists.isEmpty(products)}">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-box-open"></i></div>
+                                <div class="empty-title">Mahsulotlar topilmadi</div>
+                                <div class="empty-text">Qidiruvni o'zgartirib ko'ring yoki yangi mahsulot qo'shing.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TABLE FOOTER -->
+            <div class="table-footer" th:unless="${#lists.isEmpty(products)}"
+                 style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8f9fa; border-top: 1px solid var(--border); border-radius: 0 0 12px 12px;">
+
+                <div class="table-count" style="font-size: 0.9rem; color: var(--text-muted);">
+                    Sahifa: <strong th:text="${criteria.page + 1}" style="color: var(--text);">1</strong> /<strong th:text="${totalPages}">1</strong>
+                    (<strong th:text="${products.size()}">0</strong> ta element ko'rsatilyapti)
+                </div>
+
+                <nav th:if="${totalPages > 1}">
+                    <ul class="pagination pagination-sm mb-0 shadow-sm" style="display: flex; gap: 5px; list-style: none; padding: 0; margin: 0;">
+
+                        <li class="page-item"
+                            th:classappend="${criteria.page == 0} ? 'disabled'"
+                            th:style="${criteria.page == 0} ? 'pointer-events: none; opacity: 0.5;'">
+                            <a class="page-link"
+                               th:href="@{/products(page=${criteria.page - 1}, name=${criteria.name}, categoryId=${criteria.categoryId}, minPrice=${criteria.minPrice}, maxPrice=${criteria.maxPrice})}"
+                               style="border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none; color: var(--text-muted); display: flex; align-items: center; background: white;">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == criteria.page} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/products(page=${i}, name=${criteria.name}, categoryId=${criteria.categoryId}, minPrice=${criteria.minPrice}, maxPrice=${criteria.maxPrice})}"
+                               th:text="${i + 1}"
+                               th:style="${i == criteria.page} ?
+                            'background: var(--primary); color: white; border-radius: 6px; padding: 6px 12px; border: 1px solid var(--primary); text-decoration: none; font-weight: 600;' :
+                            'background: white; color: var(--text); border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none;'">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:classappend="${criteria.page == totalPages - 1} ? 'disabled'"
+                            th:style="${criteria.page == totalPages - 1} ? 'pointer-events: none; opacity: 0.5;'">
+                            <a class="page-link"
+                               th:href="@{/products(page=${criteria.page + 1}, name=${criteria.name}, categoryId=${criteria.categoryId}, minPrice=${criteria.minPrice}, maxPrice=${criteria.maxPrice})}"
+                               style="border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none; color: var(--text-muted); display: flex; align-items: center; background: white;">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="productImageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"> <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center position-relative">
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                    data-bs-dismiss="modal" aria-label="Close" style="z-index: 1051;"></button>
+
+            <img src="" id="modalFullImage" class="img-fluid shadow-lg"
+                 style="max-height: 80vh; border: 4px solid white; border-radius: 8px;">
+
+            <h4 id="modalFullTitle" class="text-white mt-3 fw-bold"></h4>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function openProductModal(element) {
+        // Data atributlardan ma'lumotni olamiz
+        const url = element.getAttribute('data-url');
+        const title = element.getAttribute('data-title');
+
+        // Modal ichidagi rasm va sarlavhaga joylaymiz
+        document.getElementById('modalFullImage').src = url;
+        document.getElementById('modalFullTitle').innerText = title;
+
+        // Bootstrap modalini ishga tushiramiz
+        const myModal = new bootstrap.Modal(document.getElementById('productImageModal'));
+        myModal.show();
+    }
+</script>
+</body>
+</html>

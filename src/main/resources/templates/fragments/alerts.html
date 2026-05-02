@@ -1,0 +1,66 @@
+
+
+<!-- fragments/alerts.html -->
+<div th:fragment="alerts">
+
+    <!-- CSS fragment ichiga kiritildi -->
+    <style>
+        .alert {
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1.5px solid transparent; /* Bir oz qalinroq border */
+            animation: alertFadeDown 0.3s ease-out;
+            position: relative;
+        }
+
+        @keyframes alertFadeDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-color: rgba(16, 185, 129, 0.2) !important;
+            color: #34d399 !important;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+            color: #f87171 !important;
+        }
+
+        /* Ikonka o'lchami */
+        .alert i {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        /* Bootstrap yopish tugmasini rangini moslash */
+        .alert .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%); /* X tugmasini oqishroq qiladi */
+            padding: 1.2rem;
+        }
+    </style>
+
+    <!-- Error Alert -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span th:text="${error}">Xato xabari</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Success Alert -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${success}">Bajarildi!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+</div>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yangi Kategoriya | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fef3c7;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── MAIN ── */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13.5px;
+        }
+        .breadcrumb-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color .15s;
+        }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 12px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        .topbar-btn {
+            width: 36px; height: 36px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 15px;
+            transition: all .15s;
+            text-decoration: none;
+        }
+        .topbar-btn:hover { background: var(--bg); color: var(--text); }
+        .notif-dot { position: relative; }
+        .notif-dot::after {
+            content: '';
+            position: absolute;
+            top: 7px; right: 7px;
+            width: 7px; height: 7px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+        }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            flex: 1;
+            padding: 32px;
+            animation: fadeUp .3s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header { margin-bottom: 28px; }
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+        .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── LAYOUT ── */
+        .create-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header-block {
+            padding: 20px 24px 0;
+        }
+
+        .card-title-sm {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-icon {
+            width: 30px; height: 30px;
+            background: var(--primary-light);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            color: var(--primary-dark);
+        }
+
+        .card-body-block { padding: 20px 24px 24px; }
+
+        /* ── FORM ── */
+        .form-group { margin-bottom: 18px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .label-required { color: var(--danger); font-size: 11px; }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+            -webkit-appearance: none;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+        }
+        .form-control.is-invalid { border-color: var(--danger); }
+        .form-control.is-invalid:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
+        .form-control::placeholder { color: var(--text-light); }
+        textarea.form-control { resize: vertical; min-height: 110px; }
+
+        .field-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .form-hint { font-size: 12px; color: var(--text-muted); }
+        .char-count { font-size: 11.5px; color: var(--text-light); }
+
+        .invalid-feedback {
+            font-size: 12px;
+            color: var(--danger);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 4px 0 18px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-row { display: flex; gap: 10px; padding-top: 4px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 10px 20px;
+            font-size: 13.5px;
+            font-family: inherit;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all .15s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn-primary-custom {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 1px 4px rgba(245,158,11,.3);
+        }
+        .btn-primary-custom:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 3px 10px rgba(245,158,11,.35);
+            transform: translateY(-1px);
+            color: #fff;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1.5px solid var(--border);
+        }
+        .btn-ghost:hover {
+            background: var(--bg);
+            color: var(--text);
+            border-color: #cbd5e1;
+        }
+        .btn-full { flex: 1; }
+
+        /* ── SIDE CARDS ── */
+        .side-stack { display: flex; flex-direction: column; gap: 16px; }
+
+        /* ── CHECKLIST ── */
+        .checklist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+
+        .checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .check-icon {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #d1fae5;
+            color: #059669;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ── EXAMPLES ── */
+        .example-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
+        .ex-tag {
+            padding: 4px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .15s;
+            font-family: inherit;
+        }
+        .ex-tag:hover {
+            background: var(--primary-light);
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        /* ── TIP BOX ── */
+        .tip-box {
+            background: var(--primary-light);
+            border: 1px solid #fde68a;
+            border-radius: 9px;
+            padding: 14px;
+            display: flex;
+            gap: 10px;
+            font-size: 12.5px;
+            color: #92400e;
+            line-height: 1.5;
+        }
+        .tip-box i { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+        @media (max-width: 900px) {
+            .create-layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='categories')}"></div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a href="/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <a th:href="@{/categories}">Kategoriyalar</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Yangi qo'shish</span>
+        </nav>
+        <div class="topbar-actions">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <div class="page-header">
+            <h1 class="page-title">Yangi kategoriya</h1>
+            <p class="page-subtitle">Yangi mahsulot kategoriyasi yarating va saqlang.</p>
+        </div>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <div class="create-layout">
+
+            <!-- ── FORM CARD ── -->
+            <div class="card">
+                <div class="card-header-block">
+                    <div class="card-title-sm">
+                        <div class="title-icon"><i class="bi bi-plus-circle"></i></div>
+                        Kategoriya ma'lumotlari
+                    </div>
+                </div>
+                <div class="card-body-block">
+
+                    <form th:action="@{/categories/create}" th:object="${categoryDto}" method="post">
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Kategoriya nomi
+                                <span class="label-required">*</span>
+                            </label>
+                            <input
+                                    type="text"
+                                    th:field="*{name}"
+                                    class="form-control"
+                                    th:classappend="${#fields.hasErrors('name')} ? ' is-invalid' : ''"
+                                    placeholder="Masalan: Elektronika, Oziq-ovqat..."
+                                    maxlength="100"
+                                    oninput="updateCount(this,'nameCount')"
+                                    id="nameInput"
+                            >
+                            <div class="field-footer">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" style="margin-top:0">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    <span th:errors="*{name}"></span>
+                                </div>
+                                <div class="form-hint" th:unless="${#fields.hasErrors('name')}">Noyob va aniq nom kiriting</div>
+                                <span class="char-count"><span id="nameCount">0</span>/100</span>
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Tavsifi
+                                <span style="font-size:11px;color:var(--text-light);font-weight:400;">(Ixtiyoriy)</span>
+                            </label>
+                            <textarea
+                                    th:field="*{description}"
+                                    class="form-control"
+                                    rows="5"
+                                    placeholder="Kategoriya haqida qisqacha ma'lumot..."
+                                    maxlength="500"
+                                    oninput="updateCount(this,'descCount')"
+                            ></textarea>
+                            <div class="field-footer">
+                                <div class="form-hint">Ixtiyoriy — qisqacha tavsif kiriting</div>
+                                <span class="char-count"><span id="descCount">0</span>/500</span>
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <div class="btn-row">
+                            <button type="submit" class="btn btn-primary-custom btn-full">
+                                <i class="bi bi-check2"></i> Saqlash
+                            </button>
+                            <a th:href="@{/categories}" class="btn btn-ghost btn-full">
+                                <i class="bi bi-x"></i> Bekor qilish
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── SIDE PANEL ── -->
+            <div class="side-stack">
+
+                <!-- Checklist -->
+                <div class="card">
+                    <div class="card-header-block">
+                        <div class="card-title-sm">
+                            <div class="title-icon"><i class="bi bi-check2-all"></i></div>
+                            Qo'llanma
+                        </div>
+                    </div>
+                    <div class="card-body-block">
+                        <ul class="checklist">
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Kategoriya nomi qisqa va tushunarli bo'lsin
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Bir xil nomli kategoriyalar yaratmang
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Tavsif mahsulotlarni tasniflashga yordam beradi
+                            </li>
+                            <li>
+                                <div class="check-icon"><i class="bi bi-check"></i></div>
+                                Kelajakda o'zgartirishingiz mumkin
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Examples -->
+                <div class="card">
+                    <div class="card-header-block">
+                        <div class="card-title-sm">
+                            <div class="title-icon"><i class="bi bi-lightning"></i></div>
+                            Namunalar
+                        </div>
+                    </div>
+                    <div class="card-body-block">
+                        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;">
+                            Tez to'ldirish uchun bosing:
+                        </p>
+                        <div class="example-tags">
+                            <button type="button" class="ex-tag" onclick="fillName('Elektronika')">Elektronika</button>
+                            <button type="button" class="ex-tag" onclick="fillName('Oziq-ovqat')">Oziq-ovqat</button>
+                            <button type="button" class="ex-tag" onclick="fillName('Kiyim-kechak')">Kiyim-kechak</button>
+                            <button type="button" class="ex-tag" onclick="fillName('Mebel')">Mebel</button>
+                            <button type="button" class="ex-tag" onclick="fillName('Sport')">Sport</button>
+                            <button type="button" class="ex-tag" onclick="fillName('Kitoblar')">Kitoblar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tip -->
+                <div class="tip-box">
+                    <i class="bi bi-lightbulb"></i>
+                    <div>
+                        <strong>Maslahat:</strong> Saqlangandan so'ng kategoriyaga darhol mahsulotlar qo'shishingiz mumkin.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function updateCount(el, counterId) {
+        document.getElementById(counterId).textContent = el.value.length;
+    }
+
+    function fillName(value) {
+        const input = document.getElementById('nameInput');
+        input.value = value;
+        document.getElementById('nameCount').textContent = value.length;
+        input.focus();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[oninput]').forEach(el => el.dispatchEvent(new Event('input')));
+    });
+</script>
+
+</body>
+</html>

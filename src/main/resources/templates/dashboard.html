@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Inventory - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .sidebar { min-height: 100vh; background: #212529; color: white; width: 260px; position: fixed; }
+        .main-content { margin-left: 260px; padding: 30px; }
+        .nav-link { color: #adb5bd; padding: 12px 20px; transition: 0.3s; border-radius: 8px; margin: 4px 15px; }
+        .nav-link:hover, .nav-link.active { background: #343a40; color: #fff; }
+        .nav-link i { margin-right: 10px; }
+        .stat-card { border: none; border-radius: 15px; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .bg-soft-success { background: #e8f5e9; color: #2e7d32; }
+        .bg-soft-primary { background: #e3f2fd; color: #1565c0; }
+        .bg-soft-danger { background: #ffebee; color: #c62828; }
+        .quick-action-btn { border-radius: 10px; padding: 15px; text-align: left; width: 100%; border: 1px solid #dee2e6; background: white; transition: 0.3s; }
+        .quick-action-btn:hover { border-color: #0d6efd; background: #f0f7ff; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='orders')}"></div>
+
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold">Xayrli kun!</h3>
+            <p class="text-muted">Tizimdagi bugungi holat bilan tanishing</p>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-3 text-muted" th:text="${#calendars.format(#calendars.createNow(), 'dd-MMMM, yyyy')}">15-Aprel, 2026</span>
+            <div class="dropdown">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=0D6EFD&color=fff" class="rounded-circle shadow-sm" width="40" alt="Profile">
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="icon-box bg-soft-success"><i class="bi bi-bag-check fs-4"></i></div>
+                        <span class="text-success small fw-bold">+12% <i class="bi bi-arrow-up"></i></span>
+                    </div>
+                    <h6 class="text-muted mb-1">Jami Buyurtmalar</h6>
+                    <h3 class="fw-bold mb-0" th:text="${totalOrders}">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="icon-box bg-soft-primary"><i class="bi bi-currency-dollar fs-4"></i></div>
+                        <span class="text-primary small fw-bold">Live Data</span>
+                    </div>
+                    <h6 class="text-muted mb-1">Umumiy Tushum</h6>
+                    <h3 class="fw-bold mb-0">
+                        <span th:text="${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 0, 'POINT')}">0</span> <small class="fs-6 fw-normal">so'm</small>
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card stat-card shadow-sm border-start border-danger border-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="icon-box bg-soft-danger"><i class="bi bi-graph-down-arrow fs-4"></i></div>
+                        <span class="badge bg-danger">Muhim</span>
+                    </div>
+                    <h6 class="text-muted mb-1">Kam Qolgan Tovar</h6>
+                    <h3 class="fw-bold mb-0" th:text="${lowStock}">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h5 class="fw-bold mb-4">Tezkor harakatlar</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="/orders/create" class="text-decoration-none text-dark">
+                            <div class="quick-action-btn">
+                                <i class="bi bi-plus-circle text-primary fs-4"></i>
+                                <div class="mt-2 fw-semibold">Yangi Buyurtma</div>
+                                <small class="text-muted">Sotuvni rasmiylashtirish</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/products/create" class="text-decoration-none text-dark">
+                            <div class="quick-action-btn">
+                                <i class="bi bi-box-seam text-success fs-4"></i>
+                                <div class="mt-2 fw-semibold">Mahsulot Qo'shish</div>
+                                <small class="text-muted">Omborni yangilash</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/categories/create" class="text-decoration-none text-dark">
+                            <div class="quick-action-btn">
+                                <i class="bi bi-tags text-warning fs-4"></i>
+                                <div class="mt-2 fw-semibold">Kategoriya</div>
+                                <small class="text-muted">Yangi bo'lim ochish</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-primary text-white p-4 h-100">
+                <h5 class="fw-bold">Tizim Ma'lumoti</h5>
+                <p class="small opacity-75 mt-3">Smart Stock v2.0 tizimi orqali siz real vaqt rejimida savdolarni kuzatishingiz va ombor qoldig'ini boshqarishingiz mumkin.</p>
+                <div class="mt-auto">
+                    <button class="btn btn-light btn-sm w-100 fw-bold">Hisobotlarni yuklash (.pdf)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
