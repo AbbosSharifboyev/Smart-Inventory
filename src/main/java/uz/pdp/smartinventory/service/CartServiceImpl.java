@@ -22,7 +22,7 @@ public class CartServiceImpl implements CartService{
 
 
     @Override
-    public void addrToCart(UUID productId, HttpSession session) {
+    public void addToCart(UUID productId, HttpSession session) {
         Map<UUID, CartItem> cart = getOrCreateCart(session);
         int currentQty = cart.containsKey(productId) ? cart.get(productId).getQuantity() : 0;
 

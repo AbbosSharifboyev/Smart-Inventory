@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface CartService {
 
-    void addrToCart(UUID productId, HttpSession httpSession);
+    void addToCart(UUID productId, HttpSession httpSession);
     void removeFromCart(UUID productId, HttpSession httpSession);
     void deleteFromCart(UUID productId, HttpSession httpSession);
 

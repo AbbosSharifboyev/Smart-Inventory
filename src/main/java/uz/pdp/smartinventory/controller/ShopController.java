@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +56,7 @@ public class ShopController {
                             RedirectAttributes redirectAttributes) {
 
         try {
-            cartService.addrToCart(id, session);
+            cartService.addToCart(id, session);
         }catch (Exception e){
             redirectAttributes.addFlashAttribute("error",e.getMessage());
         }

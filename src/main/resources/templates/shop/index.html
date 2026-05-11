@@ -121,93 +121,6 @@
         .empty{grid-column:1/-1;text-align:center;padding:72px 24px;}
         .empty-ico{width:72px;height:72px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--text-light);margin:0 auto 16px;}
 
-        /* ── COMPACT PAGINATION STYLES ── */
-        .shop-pagination-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            background: var(--bg3);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            margin-top: 24px;
-            margin-bottom: 40px;
-        }
-
-        .pg-info {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-        .pg-info span { color: var(--text); }
-        .pg-info small { font-weight: 400; margin-left: 5px; opacity: 0.7; }
-
-        .pg-nav {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .pg-numbers {
-            display: flex;
-            gap: 6px;
-        }
-
-        .pg-btn, .pg-num {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .pg-btn {
-            width: 36px;
-            height: 36px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-        }
-
-        .pg-num {
-            min-width: 36px;
-            height: 36px;
-            padding: 0 12px;
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid transparent;
-        }
-
-        .pg-btn:hover:not(.disabled), .pg-num:hover:not(.active) {
-            background: var(--surface);
-            border-color: var(--border2);
-            color: var(--text);
-            transform: translateY(-1px);
-        }
-
-        .pg-num.active {
-            background: var(--primary);
-            color: #000;
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-
-        .pg-btn.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            filter: grayscale(1);
-        }
-
-        @media (max-width: 600px) {
-            .shop-pagination-wrap {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
-            }
-            .pg-numbers { display: none; } /* Mobil qurilmada faqat < > tugmalari qoladi */
-        }
         /* Footer */
         footer{border-top:1px solid var(--border);background:var(--bg2);padding:24px 40px;display:flex;align-items:center;justify-content:space-between;}
         .f-brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--text-muted);}
@@ -216,6 +129,89 @@
 
         @media(max-width:900px){.navbar,.hero,.filter-wrap,.products-wrap{padding-left:16px;padding-right:16px;}.hero-title{font-size:26px;}.nav-search{max-width:220px;margin:0 12px;}footer{flex-direction:column;gap:8px;text-align:center;}}
         @media(max-width:600px){.navbar{padding:0 12px;}.nav-search{display:none;}.product-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}}
+    </style>
+    <!-- THEME: flash oldini olish -->
+    <script>
+        (function(){
+            var t = localStorage.getItem('si-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <style>
+        /* ══ LIGHT THEME ══ */
+        [data-theme="light"] {
+            --primary: #d97706;
+            --primary-dark: #b45309;
+            --primary-glow: rgba(217,119,6,.15);
+            --bg:  #f8fafc;
+            --bg2: #ffffff;
+            --bg3: #f1f5f9;
+            --bg4: #e2e8f0;
+            --surface:  rgba(0,0,0,.03);
+            --surface2: rgba(0,0,0,.05);
+            --border:   rgba(0,0,0,.09);
+            --border2:  rgba(0,0,0,.15);
+            --text:       #0f172a;
+            --text-muted: #475569;
+            --text-light: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        [data-theme="light"] body {
+            background: var(--bg);
+            color: var(--text);
+        }
+        [data-theme="light"] .navbar,
+        [data-theme="light"] .cart-card,
+        [data-theme="light"] .summary-card,
+        [data-theme="light"] .co-card,
+        [data-theme="light"] .success-card {
+            background: #ffffff;
+        }
+        [data-theme="light"] .navbar {
+            background: rgba(255,255,255,.92);
+            border-bottom: 1px solid rgba(0,0,0,.09);
+        }
+        [data-theme="light"] .hero {
+            background: linear-gradient(150deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-bottom: 1px solid rgba(0,0,0,.08);
+        }
+        [data-theme="light"] .hero-title { color: #0f172a; }
+        [data-theme="light"] .hero-sub   { color: #475569; }
+        [data-theme="light"] .filter-bar,
+        [data-theme="light"] .shop-pagination-wrap { background: #ffffff; border-color: rgba(0,0,0,.09); }
+        [data-theme="light"] .f-input,
+        [data-theme="light"] .f-select,
+        [data-theme="light"] .nav-search { background: #f8fafc; color: #0f172a; border-color: rgba(0,0,0,.12); }
+        [data-theme="light"] .nav-search input { color: #0f172a; }
+        [data-theme="light"] .pcard { background: #ffffff; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .pcard-img { background: #f8fafc; }
+        [data-theme="light"] .pcard-name { color: #0f172a; }
+        [data-theme="light"] .pcard-price { color: #0f172a; }
+        [data-theme="light"] .cart-card-head,
+        [data-theme="light"] .sc-head,
+        [data-theme="light"] .co-card-head,
+        [data-theme="light"] .pg-info { background: #f8fafc; color: #0f172a; }
+        [data-theme="light"] .sc-total { background: #f8fafc; }
+        [data-theme="light"] .cart-item:hover { background: rgba(0,0,0,.02); }
+        [data-theme="light"] .stepper { background: #f1f5f9; border-color: rgba(0,0,0,.09); }
+        [data-theme="light"] .step-btn { color: #475569; }
+        [data-theme="light"] .pg-btn { background: #f8fafc; border-color: rgba(0,0,0,.1); color: #475569; }
+        [data-theme="light"] .pg-num  { color: #475569; }
+        [data-theme="light"] footer { background: #f1f5f9; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .empty-ico { background: #f1f5f9; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .form-control { background: #f8fafc; color: #0f172a; border-color: rgba(0,0,0,.12); }
+        [data-theme="light"] .profile-menu { background: #ffffff; border-color: rgba(0,0,0,.1); }
+        [data-theme="light"] .pm-user { border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .pm-item { color: #475569; }
+        [data-theme="light"] .pm-item:hover { background: #f8fafc; color: #0f172a; }
+        [data-theme="light"] .success-card { background: #ffffff; border-color: rgba(0,0,0,.1); box-shadow: 0 32px 80px rgba(0,0,0,.12); }
+        [data-theme="light"] .info-box { background: #f8fafc; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .info-val { color: #0f172a; }
+        [data-theme="light"] .btn-ghost { border-color: rgba(0,0,0,.12); color: #475569; }
+        [data-theme="light"] .btn-ghost:hover { background: #f1f5f9; color: #0f172a; }
+        [data-theme="light"] ::-webkit-scrollbar-track { background: #f1f5f9; }
+        [data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); }
     </style>
 </head>
 <body>
@@ -233,6 +229,15 @@
     </form>
 
     <div class="nav-right">
+        <!-- THEME TOGGLE -->
+        <button id="theme-toggle-btn"
+                onclick="toggleTheme()"
+                class="nav-icon-btn"
+                title="Light rejimga o'tish"
+                style="border:none;cursor:pointer;font-size:15px;">
+            <i class="bi bi-sun-fill"></i>
+        </button>
+
         <!-- Cart -->
         <a th:href="@{/shop/cart}" class="nav-icon-btn" title="Savat">
             <i class="bi bi-bag-heart"></i>
@@ -281,15 +286,14 @@
         <form th:action="@{/shop}" method="get" style="display:contents;">
             <div class="f-search">
                 <i class="bi bi-search"></i>
-                <input type="text" name="name" th:value="${criteria.name}" class="f-input" placeholder="Mahsulot nomi...">
+                <input type="text" name="name" th:value="${param.name}" class="f-input" placeholder="Mahsulot nomi...">
             </div>
             <select name="sort" class="f-select">
                 <option value="">Tartiblash</option>
-                <option value="price_asc"  th:selected="${criteria.sort == 'price_asc'}">Narxi: arzon</option>
-                <option value="price_desc" th:selected="${criteria.sort == 'price_desc'}">Narxi: qimmat</option>
-                <option value="name_asc"   th:selected="${criteria.sort == 'name_asc'}">Nomi: A-Z</option>
+                <option value="price_asc"  th:selected="${param.sort == 'price_asc'}">Narxi: arzon</option>
+                <option value="price_desc" th:selected="${param.sort == 'price_desc'}">Narxi: qimmat</option>
+                <option value="name_asc"   th:selected="${param.sort == 'name_asc'}">Nomi: A-Z</option>
             </select>
-            <input type="hidden" name="page" value="0">
             <button type="submit" class="f-btn"><i class="bi bi-funnel"></i> Filtrlash</button>
             <a th:href="@{/shop}" class="f-reset"><i class="bi bi-x"></i> Tozalash</a>
         </form>
@@ -324,6 +328,7 @@
             <div class="pcard-body">
                 <div class="pcard-cat" th:text="${p.categoryName ?: 'Mahsulot'}">Kategoriya</div>
                 <div class="pcard-name" th:text="${p.name}">Mahsulot nomi</div>
+
                 <span th:if="${p.quantity > 5}" class="sbadge s-ok">
                     <i class="bi bi-circle-fill" style="font-size:6px;"></i>
                     <span th:text="${p.quantity} + ' dona bor'">Mavjud</span>
@@ -343,7 +348,8 @@
                 <form th:action="@{/shop/cart/add/{id}(id=${p.id})}" method="post">
                     <button type="submit" class="pcard-btn" th:disabled="${p.quantity == null or p.quantity <= 0}">
                         <i class="bi bi-bag-plus"></i>
-                        <span th:text="${(p.quantity == null or p.quantity <= 0) ? 'Tugagan' : 'Savatga qo''shish'}">Savatga</span>
+                        <span th:if="${p.quantity == null or p.quantity <= 0}">Tugagan</span>
+                        <span th:unless="${p.quantity == null or p.quantity <= 0}">Savatga qo'shish</span>
                     </button>
                 </form>
             </div>
@@ -357,40 +363,28 @@
     </div>
 </div>
 
-
-<!--footer-->
-<div class="shop-pagination-wrap" th:unless="${#lists.isEmpty(products)}">
-
-    <div class="pg-info">
-        Sahifa <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>
-        <small th:text="'(' + ${products.size()} + ' mahsulot)'"></small>
-    </div>
-
-    <nav class="pg-nav" th:if="${totalPages > 1}">
-        <a th:href="@{/shop(page=${currentPage - 1}, name=${criteria.name}, sort=${criteria.sort})}"
-           class="pg-btn" th:classappend="${currentPage == 0} ? 'disabled'">
-            <i class="bi bi-chevron-left"></i>
-        </a>
-
-        <div class="pg-numbers">
-            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-               th:href="@{/shop(page=${i}, name=${criteria.name}, sort=${criteria.sort})}"
-               th:text="${i + 1}"
-               class="pg-num"
-               th:classappend="${i == currentPage} ? 'active'">1</a>
-        </div>
-
-        <a th:href="@{/shop(page=${currentPage + 1}, name=${criteria.name}, sort=${criteria.sort})}"
-           class="pg-btn" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-            <i class="bi bi-chevron-right"></i>
-        </a>
-    </nav>
-</div>
-
-<footer style="margin-top: 20px;">
+<footer>
     <div class="f-brand"><div class="f-mark">S</div> Smart Store</div>
-    <div class="f-copy">© 2026 Smart Store. Barcha huquqlar himoyalangan.</div>
+    <div class="f-copy">© 2025 Smart Store. Barcha huquqlar himoyalangan.</div>
 </footer>
 
+<script>
+    const THEME_KEY = 'si-theme';
+    function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem(THEME_KEY,t); }
+    function toggleTheme(){
+        var cur = localStorage.getItem(THEME_KEY)||'dark';
+        var next = cur==='dark'?'light':'dark';
+        applyTheme(next);
+        var btn=document.getElementById('theme-toggle-btn');
+        if(btn){ btn.innerHTML = next==='dark'?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>'; }
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+        var btn=document.getElementById('theme-toggle-btn');
+        if(!btn) return;
+        var isDark=(localStorage.getItem(THEME_KEY)||'dark')==='dark';
+        btn.innerHTML=isDark?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>';
+        btn.title=isDark?"Light rejimga o'tish":"Dark rejimga o'tish";
+    });
+</script>
 </body>
 </html>

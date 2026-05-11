@@ -17,10 +17,8 @@ public interface UserMapper {
     @Mapping(target = "enabled", source = "enabled")
     MyUserDetails toUserDetails(Users user);
 
-    // Entity -> DTO (Front-end uchun)
     UserDto toDto(Users user);
 
-    // DTO -> Entity (Saqlash uchun)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "permissions", ignore = true)
     Users fromCreateDto(UserCreateDto dto);

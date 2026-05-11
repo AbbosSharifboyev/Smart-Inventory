@@ -248,10 +248,15 @@
 
         <div class="sidebar-footer">
             <div class="sidebar-user">
-                <div class="sidebar-user-avatar">A</div>
+                <div class="sidebar-user-avatar" th:text="${#authentication.name.substring(0,1).toUpperCase()}">U</div>
                 <div>
-                    <div class="sidebar-user-name">Admin</div>
-                    <div class="sidebar-user-role">Super Administrator</div>
+                    <div class="sidebar-user-name" th:text="${#authentication.name}">Username</div>
+
+                    <div class="sidebar-user-role">
+                        <span sec:authorize="hasAuthority('USER_MANAGE')">Super Administrator</span>
+
+                        <span sec:authorize="!hasAuthority('USER_MANAGE')">Administrator</span>
+                    </div>
                 </div>
             </div>
         </div>
