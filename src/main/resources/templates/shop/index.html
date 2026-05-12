@@ -88,6 +88,18 @@
         .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;}
 
         /* ── PRODUCT CARD ── */
+        /* Oddiy holatdagi tugma */
+        .pcard-btn {
+            background: var(--primary);
+            color: #000;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        .pcard-btn-disabled i {
+            color: var(--danger); /* "Tugagan" belgisini qizil qilish uchun */
+        }
         .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s;position:relative;}
         .pcard:hover{transform:translateY(-5px);box-shadow:0 18px 44px rgba(0,0,0,.45);border-color:var(--border2);}
         .pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);opacity:0;transition:opacity .3s;}
@@ -216,6 +228,25 @@
 </head>
 <body>
 
+<script>
+    const THEME_KEY = 'si-theme';
+    function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem(THEME_KEY,t); }
+    function toggleTheme(){
+        var cur = localStorage.getItem(THEME_KEY)||'dark';
+        var next = cur==='dark'?'light':'dark';
+        applyTheme(next);
+        var btn=document.getElementById('theme-toggle-btn');
+        if(btn){ btn.innerHTML = next==='dark'?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>'; }
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+        var btn=document.getElementById('theme-toggle-btn');
+        if(!btn) return;
+        var isDark=(localStorage.getItem(THEME_KEY)||'dark')==='dark';
+        btn.innerHTML=isDark?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>';
+        btn.title=isDark?"Light rejimga o'tish":"Dark rejimga o'tish";
+    });
+</script>
+
 <!-- NAVBAR -->
 <nav class="navbar">
     <a href="/shop" class="nav-brand">
@@ -326,7 +357,7 @@
                 </div>
             </div>
             <div class="pcard-body">
-                <div class="pcard-cat" th:text="${p.categoryName ?: 'Mahsulot'}">Kategoriya</div>
+                <div class="pcard-cat" th:text="${p.categoryName != null ? p.categoryName : 'Mahsulot'}">Kategoriya</div>
                 <div class="pcard-name" th:text="${p.name}">Mahsulot nomi</div>
 
                 <span th:if="${p.quantity > 5}" class="sbadge s-ok">
@@ -346,10 +377,20 @@
                 </div>
 
                 <form th:action="@{/shop/cart/add/{id}(id=${p.id})}" method="post">
-                    <button type="submit" class="pcard-btn" th:disabled="${p.quantity == null or p.quantity <= 0}">
-                        <i class="bi bi-bag-plus"></i>
-                        <span th:if="${p.quantity == null or p.quantity <= 0}">Tugagan</span>
-                        <span th:unless="${p.quantity == null or p.quantity <= 0}">Savatga qo'shish</span>
+                    <button type="submit"
+                            class="pcard-btn"
+                            th:classappend="${p.quantity == null or p.quantity <= 0} ? 'pcard-btn-disabled' : ''"
+                            th:disabled="${p.quantity == null or p.quantity <= 0}">
+
+                        <th:block th:unless="${p.quantity == null or p.quantity <= 0}">
+                            <i class="bi bi-bag-plus"></i>
+                            <span>Savatga qo'shish</span>
+                        </th:block>
+
+                        <th:block th:if="${p.quantity == null or p.quantity <= 0}">
+                            <i class="bi bi-x-circle"></i>
+                            <span>Tugagan</span>
+                        </th:block>
                     </button>
                 </form>
             </div>
@@ -368,23 +409,6 @@
     <div class="f-copy">© 2025 Smart Store. Barcha huquqlar himoyalangan.</div>
 </footer>
 
-<script>
-    const THEME_KEY = 'si-theme';
-    function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem(THEME_KEY,t); }
-    function toggleTheme(){
-        var cur = localStorage.getItem(THEME_KEY)||'dark';
-        var next = cur==='dark'?'light':'dark';
-        applyTheme(next);
-        var btn=document.getElementById('theme-toggle-btn');
-        if(btn){ btn.innerHTML = next==='dark'?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>'; }
-    }
-    document.addEventListener('DOMContentLoaded',function(){
-        var btn=document.getElementById('theme-toggle-btn');
-        if(!btn) return;
-        var isDark=(localStorage.getItem(THEME_KEY)||'dark')==='dark';
-        btn.innerHTML=isDark?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>';
-        btn.title=isDark?"Light rejimga o'tish":"Dark rejimga o'tish";
-    });
-</script>
+
 </body>
 </html>

@@ -72,6 +72,85 @@
 
         @media(max-width:540px){.success-card{padding:36px 20px 28px;}.info-grid{grid-template-columns:1fr;}}
     </style>
+    <!-- THEME: flash oldini olish -->
+    <script>
+        (function(){
+            var t = localStorage.getItem('si-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <style>
+        /* ══ LIGHT THEME ══ */
+        [data-theme="light"] {
+            --primary: #d97706;
+            --primary-dark: #b45309;
+            --primary-glow: rgba(217,119,6,.15);
+            --bg:  #f8fafc;
+            --bg2: #ffffff;
+            --bg3: #f1f5f9;
+            --bg4: #e2e8f0;
+            --surface:  rgba(0,0,0,.03);
+            --surface2: rgba(0,0,0,.05);
+            --border:   rgba(0,0,0,.09);
+            --border2:  rgba(0,0,0,.15);
+            --text:       #0f172a;
+            --text-muted: #475569;
+            --text-light: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        [data-theme="light"] body { background: var(--bg); color: var(--text); }
+        [data-theme="light"] .navbar { background: rgba(255,255,255,.92); border-bottom-color: rgba(0,0,0,.09); }
+        [data-theme="light"] .cart-card,
+        [data-theme="light"] .summary-card { background: #ffffff; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .cart-card-head,
+        [data-theme="light"] .sc-head,
+        [data-theme="light"] .sc-total { background: #f8fafc; }
+        [data-theme="light"] .cart-item:hover { background: rgba(0,0,0,.02); }
+        [data-theme="light"] .ci-name { color: #0f172a; }
+        [data-theme="light"] .ci-price { color: #475569; }
+        [data-theme="light"] .ci-img-ph { background: #f1f5f9; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .stepper { background: #f1f5f9; border-color: rgba(0,0,0,.09); }
+        [data-theme="light"] .step-btn { color: #475569; }
+        [data-theme="light"] .step-num { border-color: rgba(0,0,0,.09); color: #0f172a; }
+        [data-theme="light"] .sc-label { color: #475569; }
+        [data-theme="light"] .sc-val { color: #0f172a; }
+        [data-theme="light"] .sc-row { border-bottom-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .secure-note { color: #94a3b8; }
+        [data-theme="light"] .back-btn { background: #f1f5f9; color: #475569; border-color: rgba(0,0,0,.09); }
+        [data-theme="light"] .back-btn:hover { color: #0f172a; border-color: rgba(0,0,0,.15); }
+        [data-theme="light"] .empty-ico { background: #f1f5f9; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .empty-title { color: #0f172a; }
+        [data-theme="light"] .empty-text { color: #475569; }
+        [data-theme="light"] ::-webkit-scrollbar-track { background: #f1f5f9; }
+        [data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); }
+        /* checkout specific */
+        [data-theme="light"] .co-card { background: #ffffff; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .co-card-head { background: #f8fafc; color: #0f172a; border-bottom-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .form-control { background: #f8fafc; color: #0f172a; border-color: rgba(0,0,0,.12); }
+        [data-theme="light"] .order-item { border-bottom-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .oi-name { color: #0f172a; }
+        [data-theme="light"] .oi-meta { color: #475569; }
+        [data-theme="light"] .oi-img-ph { background: #f1f5f9; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .page-title { color: #0f172a; }
+        [data-theme="light"] .page-sub { color: #475569; }
+        [data-theme="light"] .cancel-link { color: #475569; }
+        [data-theme="light"] .steps { color: #475569; }
+        [data-theme="light"] .step { color: #94a3b8; }
+        [data-theme="light"] .step.active { color: #0f172a; }
+        [data-theme="light"] .step-num { background: #f1f5f9; border-color: rgba(0,0,0,.1); }
+        [data-theme="light"] .step-sep { color: #94a3b8; }
+        /* success specific */
+        [data-theme="light"] .success-card { background: #ffffff; border-color: rgba(0,0,0,.1); box-shadow: 0 32px 80px rgba(0,0,0,.12); }
+        [data-theme="light"] .info-box { background: #f8fafc; border-color: rgba(0,0,0,.08); }
+        [data-theme="light"] .info-val { color: #0f172a; }
+        [data-theme="light"] .info-lbl { color: #94a3b8; }
+        [data-theme="light"] .s-title { color: #0f172a; }
+        [data-theme="light"] .s-desc { color: #475569; }
+        [data-theme="light"] .btn-ghost { border-color: rgba(0,0,0,.12); color: #475569; }
+        [data-theme="light"] .btn-ghost:hover { background: #f1f5f9; color: #0f172a; }
+        [data-theme="light"] .bottom-note { color: rgba(0,0,0,.15); }
+    </style>
 </head>
 <body>
 
@@ -147,6 +226,24 @@
     document.getElementById('orderTime').textContent =
         now.toLocaleDateString('uz-UZ',{day:'numeric',month:'short'}) + ', ' +
         now.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});
+</script>
+<script>
+    const THEME_KEY = 'si-theme';
+    function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem(THEME_KEY,t); }
+    function toggleTheme(){
+        var cur = localStorage.getItem(THEME_KEY)||'dark';
+        var next = cur==='dark'?'light':'dark';
+        applyTheme(next);
+        var btn=document.getElementById('theme-toggle-btn');
+        if(btn){ btn.innerHTML = next==='dark'?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>'; }
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+        var btn=document.getElementById('theme-toggle-btn');
+        if(!btn) return;
+        var isDark=(localStorage.getItem(THEME_KEY)||'dark')==='dark';
+        btn.innerHTML=isDark?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-fill"></i>';
+        btn.title=isDark?"Light rejimga o'tish":"Dark rejimga o'tish";
+    });
 </script>
 </body>
 </html>
