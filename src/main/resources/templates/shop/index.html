@@ -133,6 +133,53 @@
         .empty{grid-column:1/-1;text-align:center;padding:72px 24px;}
         .empty-ico{width:72px;height:72px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--text-light);margin:0 auto 16px;}
 
+        /* Paginatsiya konteyneri uchun */
+        .pagination-custom {
+            display: flex !important;
+            flex-direction: row !important;
+            /* --- MANA SHU QATOR MARKAZGA OLIB KELADI --- */
+            justify-content: center !important;
+            /* ------------------------------------------ */
+            gap: 8px;
+            padding: 0;
+            margin: 20px auto !important; /* "auto" ham ikki tomondan markazga suradi */
+            list-style: none;
+            width: 100%; /* Konteyner to'liq kenglikni egallashi shart */
+        }
+
+        .pagination-custom .page-item {
+            margin: 0 !important;
+        }
+
+        .pagination-custom .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            background-color: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 10px !important;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        /* Aktiv sahifa */
+        .pagination-custom .page-item.active .page-link {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #000 !important;
+        }
+
+        /* Hover effekti */
+        .pagination-custom .page-link:hover:not(.disabled) {
+            background-color: var(--primary-glow);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
         /* Footer */
         footer{border-top:1px solid var(--border);background:var(--bg2);padding:24px 40px;display:flex;align-items:center;justify-content:space-between;}
         .f-brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--text-muted);}
@@ -402,6 +449,30 @@
             <div style="font-size:14px;color:var(--text-muted);">Filtrni o'zgartirib ko'ring yoki <a th:href="@{/shop}" style="color:var(--primary);">hammasini ko'ring</a>.</div>
         </div>
     </div>
+</div>
+
+
+<div class="d-flex justify-content-center w-100" style="margin-top: 30px;">
+    <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+        <ul class="pagination pagination-custom">
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/shop(page=${currentPage - 1}, name=${criteria.name})}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${currentPage == i} ? 'active'">
+                <a class="page-link" th:href="@{/shop(page=${i}, name=${criteria.name})}" th:text="${i + 1}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+                <a class="page-link" th:href="@{/shop(page=${currentPage + 1}, name=${criteria.name})}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 <footer>

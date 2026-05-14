@@ -2,12 +2,14 @@ package uz.pdp.smartinventory.repository;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.pdp.smartinventory.model.domain.Orders;
 import uz.pdp.smartinventory.model.dto.OrderDto;
 import uz.pdp.smartinventory.model.enums.OrderStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,10 +29,12 @@ public interface OrderRepository extends BaseRepository<Orders, UUID> {
 
     long countByDeletedFalse();
 
-    @Query("SELECT SUM(o.totalAmount) FROM Orders o WHERE o.deleted = false")
-    BigDecimal getTotalRevenue();
+    @Query("SELECT SUM(o.totalAmount) FROM Orders o WHERE o.deleted = false and o.status = :status")
+    BigDecimal getTotalRevenueByStatus(@Param("status") OrderStatus status);
 
     long countByStatusAndDeletedFalse(OrderStatus orderStatus);
 
     long countByStatusInAndDeletedFalse(List<OrderStatus> statuses);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

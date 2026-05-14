@@ -1,5 +1,6 @@
 package uz.pdp.smartinventory.service;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,9 @@ import uz.pdp.smartinventory.validator.OrderValidator;
 import jakarta.persistence.criteria.Predicate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -28,21 +32,22 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ActionLogService actionLogService;
 
     protected OrderServiceImpl(OrderRepository repository,
                                OrderMapper mapper,
                                OrderValidator validator,
                                ProductRepository productRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository, ActionLogService actionLogService) {
         super(repository, mapper, validator);
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.actionLogService = actionLogService;
     }
 
     @Override
     @Transactional
     public OrderDto create(OrderRequestDto dto) {
-        // 1. Validatsiya (Format va Ombor qoldig'ini tekshirish)
         validator.validateCreate(dto);
 
         // 2. Foydalanuvchini olish
@@ -80,8 +85,9 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
         }
         order.setTotalAmount(totalAmount);
 
-        // 5. Saqlash va DTO-ga o'girib qaytarish
         Orders savedOrder = repository.save(order);
+        int count = order.getItems().size();
+        actionLogService.saveLog("Yangi buyurtma qabul qilindi: " + count + " ta mahsulot", "SUCCESS");
         return mapper.toDto(savedOrder);
     }
 
@@ -91,14 +97,30 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
         Orders existingOrder = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Buyurtma topilmadi!"));
 
+        OrderStatus oldStatus = existingOrder.getStatus();
+        OrderStatus newStatus = dto.getStatus();
+
         // Status o'zgarishi mantiqan to'g'riligini tekshirish
         validator.validateUpdate(dto,existingOrder);
 
+        if (newStatus == OrderStatus.CANCELLED && oldStatus != OrderStatus.CANCELLED){
+            restockProducts(existingOrder);
+        }
         // Mapper orqali status va boshqa maydonlarni yangilash
         mapper.updateEntity(dto,existingOrder);
 
         Orders saved = repository.save(existingOrder);
+        actionLogService.saveLog("Buyurtma #" + id + " statusi o'zgardi", "INFO");
         return mapper.toDto(saved);
+    }
+
+    private void restockProducts(Orders order) {
+        for (OrderItems item : order.getItems()) {
+            Products product = item.getProduct();
+            int updatedQuantity = product.getQuantity() + item.getCount();
+            product.setQuantity(updatedQuantity);
+            productRepository.save(product);
+        }
     }
 
     @Override
@@ -177,5 +199,24 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
                 map(OrderStatus::valueOf).
                 toList();
         return repository.countByStatusInAndDeletedFalse(statuses);
+    }
+
+    public long countTodayOrders() {
+
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+
+        return repository.countByCreatedAtBetween(startOfDay, endOfDay);
+    }
+
+    public long countByDeletedFalse() {
+        return repository.countByDeletedFalse();
+    }
+
+    public BigDecimal getTotalRevenue() {
+
+        BigDecimal revenue = repository.getTotalRevenueByStatus(OrderStatus.COMPLETED);
+
+        return revenue != null ? revenue : BigDecimal.ZERO;
     }
 }

@@ -280,7 +280,7 @@
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="bi bi-exclamation-triangle"></i></div>
                 <div>
-                    <div class="stat-value" th:text="${#lists.size(products.?[quantity <= 5])}">0</div>
+                    <div class="stat-value" th:text="${lessProducts}">0</div>
                     <div class="stat-label">Kam qolgan</div>
                 </div>
             </div>

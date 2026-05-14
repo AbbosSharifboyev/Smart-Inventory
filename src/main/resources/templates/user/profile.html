@@ -94,7 +94,7 @@
 
     <header class="topbar" th:if="${#authorization.expression('hasAnyAuthority(''ROLE_ADMIN'', ''ROLE_MANAGER'')')}">
         <nav class="breadcrumb-nav">
-            <a href="#">Dashboard</a>
+            <a href="/dashboard">Dashboard</a>
             <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
             <span class="breadcrumb-current">Mening profilim</span>
         </nav>

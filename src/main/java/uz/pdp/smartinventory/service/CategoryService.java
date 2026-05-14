@@ -1,5 +1,4 @@
 package uz.pdp.smartinventory.service;
-import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +10,6 @@ import uz.pdp.smartinventory.model.domain.Categories;
 import uz.pdp.smartinventory.model.dto.CategoryCreateDto;
 import uz.pdp.smartinventory.model.dto.CategoryDto;
 import uz.pdp.smartinventory.model.dto.CategoryUpdateDto;
-import uz.pdp.smartinventory.model.dto.ProductDto;
 import uz.pdp.smartinventory.repository.CategoryRepository;
 import uz.pdp.smartinventory.validator.CategoryValidator;
 
@@ -31,9 +29,11 @@ public class CategoryService extends AbstractService<
         UUID,
         CategoryCriteria> {
 
+    private final ActionLogService actionLogService;
 
-    protected CategoryService(CategoryRepository repository, CategoryMapper mapper, CategoryValidator validator) {
+    protected CategoryService(CategoryRepository repository, CategoryMapper mapper, CategoryValidator validator, ActionLogService actionLogService) {
         super(repository, mapper, validator);
+        this.actionLogService = actionLogService;
     }
 
 
@@ -43,7 +43,9 @@ public class CategoryService extends AbstractService<
     public CategoryDto create(CategoryCreateDto dto) {
         validator.validateCreate(dto);
         Categories entity = mapper.toEntity(dto);
-        return mapper.toDto(repository.save(entity));
+        CategoryDto savedDto = mapper.toDto(repository.save(entity));
+        actionLogService.saveLog("Yangi kategoriya qo`shildi: " + entity.getName(), "INFO");
+        return savedDto;
     }
 
     @Override
@@ -52,7 +54,9 @@ public class CategoryService extends AbstractService<
         validator.validateUpdate(dto,id);
         Categories existingCategory = findByIdOrThrow(id);
         mapper.updateEntity(dto,existingCategory);
-        return mapper.toDto(repository.save(existingCategory));
+        Categories savedCategory = repository.save(existingCategory);
+        actionLogService.saveLog("Kategoriya ma'lumotlari yangilandi: " + savedCategory.getName(), "INFO");
+        return mapper.toDto(savedCategory);
     }
 
     @Override

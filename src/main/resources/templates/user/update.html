@@ -60,12 +60,12 @@
         .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:9px;}
         .toggle-info{font-size:13.5px;font-weight:600;color:var(--text);}
         .toggle-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
-        .toggle-switch{position:relative;width:42px;height:22px;z-index: 99;flex-shrink:0;cursor: pointer}
-        .toggle-switch input{position: absolute;opacity:0;width:0;height:0;}
-        .toggle-slider{position:absolute;inset:0;background:#cbd5e1;border-radius:11px;cursor:pointer;transition:.2s;pointer-events: none;}
+        .toggle-switch{position:relative;width:42px;height:22px;flex-shrink:0;cursor:pointer;}
+        .toggle-switch input[type="checkbox"]{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;}
+        .toggle-slider{position:absolute;inset:0;background:#cbd5e1;border-radius:11px;transition:.2s;}
         .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
-        .toggle-switch input:checked+.toggle-slider{background: #22c55e !important;}
-        .toggle-switch input:checked+.toggle-slider::before{transform:translateX(20px);}
+        .toggle-switch input[type="checkbox"]:checked+.toggle-slider{background:#22c55e;}
+        .toggle-switch input[type="checkbox"]:checked+.toggle-slider::before{transform:translateX(20px);}
         /* perms */
         .perms-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
         .perm-item{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;}
@@ -138,8 +138,10 @@
         <div class="edit-layout">
             <div style="display:flex;flex-direction:column;gap:16px;">
 
-                <form th:action="@{/users/update/{id}(id=${userDto.id})}" th:object="${userDto}" method="post" id="updateForm">
-                <!-- Main info -->
+                <form th:action="@{/users/update/{id}(id=${userDto.id})}"
+                      th:object="${updateDto}"
+                      method="post" id="updateForm">
+                    <!-- Main info -->
                 <div class="card">
                     <div class="card-header-block">
                         <div class="card-title-sm">
@@ -188,15 +190,17 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="enabledSwitch">Holat</label>
-
+                                    <div class="form-label">Holat</div>
                                     <div class="toggle-row">
                                         <div>
                                             <div class="toggle-info">Faol holat</div>
                                             <div class="toggle-sub">Foydalanuvchi tizimga kira oladi</div>
                                         </div>
-                                        <label class="toggle-switch" for="enabledSwitch">
-                                            <input type="checkbox" th:field="*{enabled}" id="enabledSwitch">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox"
+                                                   name="enabled"
+                                                   value="true"
+                                                   th:checked="${updateDto.enabled}">
                                             <span class="toggle-slider"></span>
                                         </label>
                                     </div>

@@ -10,6 +10,7 @@ import lombok.Setter;
 import uz.pdp.smartinventory.model.domain.base.BaseEntity;
 import uz.pdp.smartinventory.model.enums.Role;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,4 +46,5 @@ public class Users extends BaseEntity {
     private String email;
 
     private boolean enabled = true; // akkaunt holati spring security uchun
+    private LocalDateTime lastLogin;
 }

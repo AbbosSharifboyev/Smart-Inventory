@@ -39,7 +39,7 @@ public class OrderController {
 
         model.addAttribute("orders", orderPage);
         model.addAttribute("totalPages", orderPage.getTotalPages());
-        model.addAttribute("currentPages", criteria.getPage());
+        model.addAttribute("currentPage", criteria.getPage());
         model.addAttribute("statuses", OrderStatus.values());
         model.addAttribute("criteria",criteria);
         model.addAttribute("totalOrders", orderPage.getTotalElements());

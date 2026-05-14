@@ -36,10 +36,12 @@ public class ProductService extends AbstractService<
 
 
     private final FileStorageService fileStorageService;
+    private final ActionLogService actionLogService;
 
-    public ProductService(ProductRepository repository, ProductMapper mapper, ProductValidator validator, FileStorageService fileStorageService) {
+    public ProductService(ProductRepository repository, ProductMapper mapper, ProductValidator validator, FileStorageService fileStorageService, ActionLogService actionLogService) {
         super(repository, mapper, validator);
         this.fileStorageService = fileStorageService;
+        this.actionLogService = actionLogService;
     }
 
     @Override
@@ -52,7 +54,9 @@ public class ProductService extends AbstractService<
             String imageName = fileStorageService.saveImage(dto.getImage());
             entity.setImagePath(imageName);
         }
-        return mapper.toDto(repository.save(entity));
+        ProductDto savedDto = mapper.toDto(repository.save(entity));
+        actionLogService.saveLog("Yangi mahsulot qo'shildi: " + entity.getName(), "INFO");
+        return savedDto;
     }
 
     @Override
@@ -65,15 +69,18 @@ public class ProductService extends AbstractService<
 
         //Rasm bilan ishlash
         if (dto.getImage() != null && !dto.getImage().isEmpty()){
-            // Agar eski rasm bo'lsa, uni o'chirib tashlaymiz
             if (existingProduct.getImagePath() != null){
                 fileStorageService.deleteImage(existingProduct.getImagePath());
             }
-            // Yangi rasmni saqlaymiz
             String newImageName = fileStorageService.saveImage(dto.getImage());
             existingProduct.setImagePath(newImageName);
         }
-        return mapper.toDto(repository.save(existingProduct));
+        Products savedProduct = repository.save(existingProduct);
+        actionLogService.saveLog("Mahsulot ma'lumotlari yangilandi: " + savedProduct.getName(), "INFO");
+        if (savedProduct.getQuantity() != null && savedProduct.getQuantity() < 6){
+            actionLogService.saveLog("Zaxira kam: " + savedProduct.getName() + " (" + savedProduct.getQuantity() + " ta qoldi)", "WARNING");
+        }
+        return mapper.toDto(savedProduct);
     }
 
     @Override
@@ -148,6 +155,10 @@ public class ProductService extends AbstractService<
     public long countAvailableProducts() {
         return repository.countAvailableProducts();
     }
+    public long countAlertProducts() {
+        int threshold = 6;
+        return repository.countByQuantityLessThanAndDeletedFalse(threshold);
+    }
 
     public Page<ProductDto> getFilteredProducts(ProductCriteria criteria) {
 
@@ -174,5 +185,15 @@ public class ProductService extends AbstractService<
             products = repository.findAllByDeletedFalse(pageable);
         }
         return products.map(mapper::toDto);
+    }
+
+    public long getLowStockProducts() {
+        int threshold = 6;
+        return repository.countByQuantityLessThanAndDeletedFalse(threshold);
+    }
+
+    public List<Products> getLowStockProductsList() {
+        int threshold = 6;
+        return repository.findAllByQuantityLessThanAndDeletedFalse(threshold);
     }
 }

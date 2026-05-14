@@ -41,6 +41,7 @@ public class ProductController {
         model.addAttribute("totalProducts",productPage.getTotalElements());
         long availableCount = service.countAvailableProducts();
         model.addAttribute("availableProducts",availableCount);
+        model.addAttribute("lessProducts",service.countAlertProducts());
         model.addAttribute("criteria",criteria);
         model.addAttribute("canCreate", authService.hasPermission("PRODUCT_CREATE"));
         model.addAttribute("canUpdate",authService.hasPermission("PRODUCT_UPDATE"));

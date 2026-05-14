@@ -7,6 +7,7 @@ import lombok.Setter;
 import uz.pdp.smartinventory.model.domain.Permission;
 import uz.pdp.smartinventory.model.enums.Role;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
@@ -21,4 +22,5 @@ public class UserDto extends BaseDto {
     private Role role;
     private boolean enabled;
     private Set<Permission> permissions;
+    private LocalDateTime lastLogin;
 }

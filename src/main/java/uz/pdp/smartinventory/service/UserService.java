@@ -1,7 +1,10 @@
 package uz.pdp.smartinventory.service;
 
 import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +33,7 @@ import uz.pdp.smartinventory.validator.UserValidator;
 
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 public class UserService
@@ -47,15 +50,18 @@ public class UserService
 
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CacheManager cacheManager;
 
-    protected UserService(UserRepository repository,
+    public UserService(UserRepository repository,
                           UserMapper mapper,
                           UserValidator validator,
                           PermissionRepository permissionRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          CacheManager cacheManager) {
         super(repository, mapper, validator);
         this.permissionRepository = permissionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cacheManager = cacheManager;
     }
 
 
@@ -100,14 +106,34 @@ public class UserService
 
         mapper.updateFromDto(dto, user);
 
+        user.setEnabled(dto.getEnabled() != null && dto.getEnabled());
+
         if (dto.getPermissionIds() != null){
             List<Permission> permissions = permissionRepository.findAllById(dto.getPermissionIds());
             user.getPermissions().clear();
             user.getPermissions().addAll(permissions);
         }
-        return mapper.toDto(repository.save(user));
+        Users saved = repository.save(user);
+
+        clearUserPermissionCache(saved.getUsername());
+
+        return mapper.toDto(saved);
     }
 
+    private void clearUserPermissionCache(String username) {
+        Cache cache = cacheManager.getCache("permissions");
+        if (cache != null){
+            permissionRepository.findAll()
+                    .stream()
+                    .map(Permission::getName)
+                    .forEach(p -> cache.evict(username + "_" + p));
+        }
+    }
+
+    public UserUpdateDto getForUpdate(UUID id){
+        UserDto userDto = get(id);
+        return mapper.toUpdateDto(userDto);
+    }
 
     @Transactional
     public void changePassword(UUID userId, PasswordChangeDto dto){

@@ -33,7 +33,6 @@ public class UserController {
     private final CustomSecurityService auth;
 
 
-    //Admin yangi user yaratish sahifasi
     @GetMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public String createForm(Model model){
@@ -55,7 +54,6 @@ public class UserController {
         return "redirect:/users";
     }
 
-    //Foydalanuvchilar ro'yxati (Admin uchun)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public String listPage(@ModelAttribute("criteria")UserCriteria criteria, Model model){
@@ -74,11 +72,11 @@ public class UserController {
         return "user/list";
     }
 
-    //Foydalanuvchini tahrirlash (Admin uchun)
     @GetMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public String updateForm(@PathVariable UUID id, Model model){
-        model.addAttribute("userDto",service.get(id));
+    public String updateForm(@PathVariable UUID id, Model model) {
+        model.addAttribute("userDto", service.get(id));        // id, sidebar info uchun
+        model.addAttribute("updateDto", service.getForUpdate(id));    // form uchun
         model.addAttribute("allPermissions", permissionRepository.findAll());
         return "user/update";
     }
@@ -86,16 +84,15 @@ public class UserController {
     @PostMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String update(@PathVariable UUID id,
-                         @Valid @ModelAttribute("userDto") UserUpdateDto dto,
+                         @Valid @ModelAttribute("updateDto") UserUpdateDto dto,
                          BindingResult bindingResult,
-                         Model model){
-
-        System.out.println("Kelgan status: " + dto.isEnabled());
-        if (bindingResult.hasErrors()){
-            model.addAttribute("allPermissions",permissionRepository.findAll());
+                         Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("userDto", service.get(id));
+            model.addAttribute("allPermissions", permissionRepository.findAll());
             return "user/update";
         }
-        service.update(dto,id);
+        service.update(dto, id);
         return "redirect:/users";
     }
 

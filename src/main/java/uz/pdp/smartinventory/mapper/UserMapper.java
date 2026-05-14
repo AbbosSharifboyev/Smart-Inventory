@@ -17,6 +17,7 @@ public interface UserMapper {
     @Mapping(target = "enabled", source = "enabled")
     MyUserDetails toUserDetails(Users user);
 
+    @Mapping(target = "enabled",source = "enabled")
     UserDto toDto(Users user);
 
     @Mapping(target = "password", ignore = true)
@@ -27,7 +28,11 @@ public interface UserMapper {
     @Mapping(target = "password",ignore = true)
     @Mapping(target = "permissions",ignore = true)
     @Mapping(target = "username",source = "username")
+    @Mapping(target = "enabled",source = "enabled")
     void updateFromDto(UserUpdateDto dto, @MappingTarget Users user);
+
+    @Mapping(target = "permissionIds", ignore = true)
+    UserUpdateDto toUpdateDto(UserDto dto);
 
     @Mapping(target = "id",ignore = true)
     @Mapping(target = "password",ignore = true)

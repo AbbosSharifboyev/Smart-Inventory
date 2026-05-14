@@ -36,4 +36,6 @@ public interface ProductRepository extends BaseRepository<Products, UUID> {
 
     Page<Products> findAllByNameContainingIgnoreCaseAndDeletedFalse(String name, Pageable pageable);
     Page<Products> findAllByDeletedFalse(Pageable pageable);
+
+    List<Products> findAllByQuantityLessThanAndDeletedFalse(int threshold);
 }

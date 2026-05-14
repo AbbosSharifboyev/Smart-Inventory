@@ -677,25 +677,46 @@
             <!-- TABLE FOOTER -->
             <div class="table-footer" th:unless="${#lists.isEmpty(orders)}">
                 <div class="table-count">
-                    Jami <strong th:text="${orders.totalElements}">0</strong> ta buyurtma
+                    Sahifa: <strong th:text="${currentPage + 1}">1</strong> / <strong th:text="${totalPages}">1</strong>
+                    (Jami <strong th:text="${orders.totalElements}">0</strong> ta buyurtma)
                 </div>
+
+                <nav th:if="${totalPages > 1}">
+                    <ul class="pagination pagination-sm mb-0 shadow-sm" style="display: flex; gap: 5px; list-style: none;">
+
+                        <li class="page-item"
+                            th:classappend="${currentPage == 0} ? 'disabled'"
+                            th:style="${currentPage == 0} ? 'pointer-events: none; opacity: 0.5;'">
+                            <a class="page-link"
+                               th:href="@{/orders(page=${currentPage - 1}, status=${criteria.status}, userFullName=${criteria.userFullName})}"
+                               style="border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none; color: var(--text-muted);">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/orders(page=${i}, status=${criteria.status}, userFullName=${criteria.userFullName})}"
+                               th:text="${i + 1}"
+                               th:style="${i == currentPage} ? 'background: var(--primary); color: white; border-radius: 6px; padding: 6px 12px; border: 1px solid var(--primary); text-decoration: none;' : 'background: white; color: var(--text); border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none;'">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:classappend="${currentPage + 1 == totalPages} ? 'disabled'"
+                            th:style="${currentPage + 1 == totalPages} ? 'pointer-events: none; opacity: 0.5;'">
+                            <a class="page-link"
+                               th:href="@{/orders(page=${currentPage + 1}, status=${criteria.status}, userFullName=${criteria.userFullName})}"
+                               style="border-radius: 6px; padding: 6px 12px; border: 1px solid var(--border); text-decoration: none; color: var(--text-muted);">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
-
-            <nav th:if="${totalPages > 1}">
-                <ul class="pagination pagination-sm justify-content-center">
-                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                        <a class="page-link" th:href="@{/orders(page=${currentPage - 1}, status=${criteria.status}, userFullName=${criteria.userFullName})}">Orqaga</a>
-                    </li>
-                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                        th:classappend="${currentPage == i} ? 'active'">
-                        <a class="page-link" th:href="@{/orders(page=${i}, status=${criteria.status}, userFullName=${criteria.userFullName})}" th:text="${i + 1}">1</a>
-                    </li>
-                    <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
-                        <a class="page-link" th:href="@{/orders(page=${currentPage + 1}, status=${criteria.status}, userFullName=${criteria.userFullName})}">Oldinga</a>
-                    </li>
-                </ul>
-            </nav>
-
         </div>
     </main>
 </div>

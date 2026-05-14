@@ -25,7 +25,7 @@ public class UserUpdateDto {
     private String email;
 
     private Role role;
-    private boolean enabled;
+    private Boolean enabled;
 
     // Admin foydalanuvchining huquqlarini o'zgartirishi uchun IDlar ro'yxati
     private List<UUID> permissionIds;
