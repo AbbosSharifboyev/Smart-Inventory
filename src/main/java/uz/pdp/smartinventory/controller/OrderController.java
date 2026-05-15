@@ -35,7 +35,6 @@ public class OrderController {
     public String getAll(Model model, @ModelAttribute("criteria") OrderCriteria criteria){
 
         Page<OrderDto> orderPage = orderService.getAll(criteria);
-        System.out.println("Orders API-ga so'rov keldi!"); // Konsolni tekshirish uchun
 
         model.addAttribute("orders", orderPage);
         model.addAttribute("totalPages", orderPage.getTotalPages());

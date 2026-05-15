@@ -30,5 +30,4 @@ public class Products extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id",nullable = false)
     private Categories category;
-
 }

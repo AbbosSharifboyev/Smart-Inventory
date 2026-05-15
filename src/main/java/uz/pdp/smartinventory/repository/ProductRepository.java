@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import uz.pdp.smartinventory.model.domain.Products;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +29,11 @@ public interface ProductRepository extends BaseRepository<Products, UUID> {
     List<Products> findAllWithCategories();
 
     long countByDeletedFalse();
+
+    long countByQuantityAndDeletedFalse(Integer quantity);
+
+    @Query("select sum(p.price * p.quantity) from Products p where p.deleted = false ")
+    BigDecimal calculateTotalValue();
 
     @Query("SELECT COUNT(p) FROM Products p WHERE p.quantity > 0 AND p.deleted = false")
     long countAvailableProducts();

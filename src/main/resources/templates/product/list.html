@@ -335,7 +335,7 @@
                 <table class="data-table">
                     <thead>
                     <tr>
-                        <th style="width:44px;">№</th>
+                        <th style="width:50px; text-align: center;">№</th>
                         <th>Mahsulot</th>
                         <th>Narxi</th>
                         <th>Miqdori</th>
@@ -347,8 +347,8 @@
 
                     <!-- DATA ROWS -->
                     <tr th:each="product, iter : ${products}">
-                        <td class="row-num" th:text="${iter.count}">1</td>
-                        <td>
+                        <td style="text-align:center;font-size:12px;color:var(--text-light);font-weight:600;"
+                            th:text="(${criteria.page} * ${criteria.size}) + ${iter.count}">1</td>                        <td>
                             <div class="prod-info">
                                 <img th:if="${product.imagePath != null and !product.imagePath.isEmpty()}"
                                      th:src="@{'/uploads/' + ${product.imagePath}}"

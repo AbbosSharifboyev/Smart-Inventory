@@ -46,7 +46,7 @@ public class ShopController {
         model.addAttribute("currentPage",productPage.getNumber());
         model.addAttribute("totalPages",productPage.getTotalPages());
         model.addAttribute("criteria",criteria);
-        return "shop/index";
+        return "shop/list";
     }
 
     @PostMapping("/cart/add/{id}")
