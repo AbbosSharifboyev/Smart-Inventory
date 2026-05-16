@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body { font-family: 'Arial', sans-serif; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; }
+        .stat-box { background: #f3f4f6; padding: 10px; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4f46e5; color: white; }
+        .warning { color: #ef4444; font-weight: bold; }
+        .center { text-align: center; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Smart Store v2.0 - Tizim Hisoboti</h1>
+    <p th:text="'Sana: ' + ${reportDate}">01.01.2024</p>
+</div>
+
+<div class="stat-box">
+    <h3>Umumiy statistika:</h3>
+    <p th:text="'Bugungi buyurtmalar soni: ' + ${totalOrders}">0</p>
+</div>
+
+<h3>Kam qolgan mahsulotlar:</h3>
+<table>
+    <thead>
+    <tr>
+        <th class="center">№</th>
+        <th>Mahsulot nomi</th>
+        <th>Kategoriya</th>
+        <th>Qoldiq</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="p, stat : ${lowStockProducts}">
+        <td class="center" th:text="${stat.count}">1</td>
+        <td th:text="${p.name}">Nomi</td>
+        <td th:text="${p.category.name}">Kategoriya</td>
+        <td class="warning" th:text="${p.quantity} + ' ta qoldi'">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>Tizim foydalanuvchilari:</h3>
+<table>
+    <thead>
+    <tr>
+        <th class="center">№</th>
+        <th>Foydalanuvchi</th>
+        <th>Rol</th>
+        <th>Oxirgi kirish</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="u, stat : ${users}">
+        <td class="center" th:text="${stat.count}">1</td>
+        <td th:text="${u.username}">admin</td>
+        <td th:text="${u.role}">ADMIN</td>
+        <td th:text="${u.lastLogin != null ? #temporals.format(u.lastLogin, 'dd.MM.yyyy HH:mm') : 'Noma''lum'}"></td>    </tr>
+    </tbody>
+</table>
+</body>
+</html>

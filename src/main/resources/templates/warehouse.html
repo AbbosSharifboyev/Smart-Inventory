@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ombor Holati | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fef3c7;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --blue: #3b82f6;
+            --blue-light: #dbeafe;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+            --font: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── TOPBAR ── */
+        .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .breadcrumb-nav { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+        .breadcrumb-nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 11px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 8px; }
+        .topbar-btn { width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 15px; transition: all .15s; text-decoration: none; }
+        .topbar-btn:hover { background: var(--bg); color: var(--text); }
+
+        /* ── PAGE ── */
+        .page-body { flex: 1; padding: 32px; animation: fadeUp .3s ease both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+        .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── STAT CARDS ── */
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; position: relative; overflow: hidden; transition: transform .2s, box-shadow .2s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius) var(--radius) 0 0; }
+        .stat-card.c-green::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+        .stat-card.c-blue::before   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .stat-card.c-yellow::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .stat-card.c-red::before    { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .s-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; }
+        .s-icon.g { background: var(--success-light); color: #059669; }
+        .s-icon.b { background: var(--blue-light);    color: #2563eb; }
+        .s-icon.y { background: var(--warning-light); color: #d97706; }
+        .s-icon.r { background: var(--danger-light);  color: #dc2626; }
+        .s-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin: 14px 0 5px; }
+        .s-value { font-size: 26px; font-weight: 800; letter-spacing: -.5px; color: var(--text); }
+        .s-value small { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+
+        /* ── FILTER BAR ── */
+        .filter-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+        .filter-input { font-family: var(--font); font-size: 13px; font-weight: 500; border: 1.5px solid var(--border); border-radius: 9px; padding: 8px 12px; color: var(--text); background: var(--bg); outline: none; transition: border .15s; }
+        .filter-input:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,.1); }
+        .filter-btn { font-family: var(--font); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 16px; cursor: pointer; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); transition: all .15s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .filter-btn:hover { border-color: #a78bfa; background: #f5f3ff; color: var(--text); }
+        .filter-btn.active-filter { background: var(--text); color: #fff; border-color: var(--text); }
+        .filter-btn.danger { background: var(--danger-light); color: #b91c1c; border-color: #fecaca; }
+        .filter-btn.danger:hover { background: #fecaca; }
+
+        /* ── TABLE ── */
+        .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .table-card table { width: 100%; border-collapse: collapse; }
+        .table-card thead tr { background: var(--surface-2); border-bottom: 1px solid var(--border); }
+        .table-card thead th { padding: 11px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); white-space: nowrap; }
+        .table-card tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+        .table-card tbody tr:last-child { border-bottom: none; }
+        .table-card tbody tr:hover { background: #f8fafc; }
+        .table-card tbody td { padding: 13px 16px; font-size: 13.5px; font-weight: 500; vertical-align: middle; }
+
+        /* ── STOCK BADGE ── */
+        .stock-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+        .stock-ok      { background: var(--success-light); color: #059669; }
+        .stock-low     { background: var(--warning-light); color: #b45309; }
+        .stock-out     { background: var(--danger-light);  color: #dc2626; }
+
+        /* ── STOCK BAR ── */
+        .stock-bar-wrap { display: flex; align-items: center; gap: 10px; }
+        .stock-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 80px; }
+        .stock-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+        .stock-bar-fill.ok  { background: #10b981; }
+        .stock-bar-fill.low { background: #f59e0b; }
+        .stock-bar-fill.out { background: #ef4444; }
+        .stock-qty { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+        /* ── LOW STOCK PANEL ── */
+        .low-stock-panel { background: var(--surface); border: 1.5px solid #fde68a; border-radius: var(--radius); overflow: hidden; }
+        .low-stock-header { background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .low-stock-header h6 { font-size: 13.5px; font-weight: 700; color: #92400e; margin: 0; display: flex; align-items: center; gap: 7px; }
+        .low-stock-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-bottom: 1px solid #fef3c7; transition: background .1s; }
+        .low-stock-item:last-child { border-bottom: none; }
+        .low-stock-item:hover { background: #fffbeb; }
+        .low-stock-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .low-stock-cat  { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+
+        /* ── PAGINATION ── */
+        .pagination-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-top: 1px solid var(--border); }
+        .pagination-info { font-size: 12.5px; color: var(--text-muted); font-weight: 500; }
+        .page-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; transition: all .15s; text-decoration: none; color: var(--text); }
+        .page-btn:hover  { border-color: #a78bfa; background: #f5f3ff; color: var(--text); }
+        .page-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+        .page-btn.disabled { opacity: .4; pointer-events: none; }
+
+        /* ── EMPTY ── */
+        .empty-state { text-align: center; padding: 52px 24px; }
+        .empty-icon  { font-size: 40px; color: #cbd5e1; margin-bottom: 10px; }
+        .empty-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+        .empty-desc  { font-size: 13px; color: var(--text-muted); }
+
+        /* ── CATEGORY CHIP ── */
+        .cat-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--blue-light); color: #1d4ed8; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 600; }
+
+        @media(max-width: 768px) { .main-content { margin-left: 0; } .page-body { padding: 16px; } }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='warehouse')}"></div>
+
+<div class="main-content">
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a th:href="@{/dashboard}">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Ombor Holati</span>
+        </nav>
+        <div class="topbar-right">
+            <a th:href="@{/products/create}" class="filter-btn active-filter">
+                <i class="bi bi-plus-lg"></i> Mahsulot qo'shish
+            </a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <!-- PAGE HEADER -->
+        <div class="mb-4">
+            <div class="page-title">Ombor Holati</div>
+            <div class="page-subtitle">Mahsulot qoldiqlari va ombor statistikasi</div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card c-green">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="s-icon g"><i class="bi bi-boxes"></i></div>
+                        <span style="font-size:11px; font-weight:700; background:var(--success-light); color:#059669; padding:3px 9px; border-radius:20px;">Jami</span>
+                    </div>
+                    <div class="s-label">Mahsulotlar</div>
+                    <div class="s-value" th:text="${totalProducts}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card c-blue">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="s-icon b"><i class="bi bi-check-circle"></i></div>
+                        <span style="font-size:11px; font-weight:700; background:var(--blue-light); color:#2563eb; padding:3px 9px; border-radius:20px;">Mavjud</span>
+                    </div>
+                    <div class="s-label">Sotuvda bor</div>
+                    <div class="s-value" th:text="${availableProducts}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card c-yellow">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="s-icon y"><i class="bi bi-exclamation-triangle"></i></div>
+                        <span style="font-size:11px; font-weight:700; background:var(--warning-light); color:#b45309; padding:3px 9px; border-radius:20px;">Diqqat</span>
+                    </div>
+                    <div class="s-label">Kam qolgan</div>
+                    <div class="s-value" th:text="${lowStockCount}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card c-red">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="s-icon r"><i class="bi bi-x-circle"></i></div>
+                        <span style="font-size:11px; font-weight:700; background:var(--danger-light); color:#dc2626; padding:3px 9px; border-radius:20px;">Tugagan</span>
+                    </div>
+                    <div class="s-label">Tugagan</div>
+                    <div class="s-value" th:text="${outOfStockCount}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- MAIN TABLE -->
+            <div class="col-lg-8">
+
+                <!-- FILTER -->
+                <div class="filter-bar mb-3">
+                    <form th:action="@{/warehouse}" method="get"
+                          class="d-flex align-items-center gap-2 flex-wrap w-100">
+                        <i class="bi bi-search" style="color:var(--text-muted); font-size:14px;"></i>
+                        <input type="text" name="search" class="filter-input"
+                               style="flex:1; min-width:180px;"
+                               placeholder="Mahsulot nomi..."
+                               th:value="${search}">
+                        <button type="submit" class="filter-btn active-filter">
+                            <i class="bi bi-search"></i> Qidirish
+                        </button>
+                        <a th:href="@{/warehouse}" class="filter-btn">
+                            <i class="bi bi-x-lg"></i> Tozalash
+                        </a>
+                    </form>
+                </div>
+
+                <!-- TABLE -->
+                <div class="table-card">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Mahsulot</th>
+                            <th>Kategoriya</th>
+                            <th>Narx</th>
+                            <th>Qoldiq</th>
+                            <th>Holat</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p, stat : ${products}"
+                            th:if="${products != null and !products.isEmpty()}">
+                            <td style="color:var(--text-muted); font-size:12px;"
+                                th:text="${(currentPage * pageSize) + stat.index + 1}">1</td>
+                            <td>
+                                <div style="font-weight:600; font-size:13.5px;"
+                                     th:text="${p.name}">Mahsulot</div>
+                            </td>
+                            <td>
+                                    <span class="cat-chip">
+                                        <i class="bi bi-tag" style="font-size:10px;"></i>
+                                        <span th:text="${p.category?.name ?: '—'}">Kategoriya</span>
+                                    </span>
+                            </td>
+                            <td style="font-weight:700; color:#059669;">
+                                <span th:text="${#numbers.formatDecimal(p.price, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                <small style="font-size:11px; font-weight:500; color:var(--text-muted);"> so'm</small>
+                            </td>
+                            <td>
+                                <div class="stock-bar-wrap">
+                                    <!-- max 100 dona deb hisoblaymiz, undan oshsa 100% -->
+                                    <div class="stock-bar">
+                                        <div class="stock-bar-fill"
+                                             th:classappend="${p.quantity == 0} ? ' out' : (${p.quantity < lowStockThreshold} ? ' low' : ' ok')"
+                                             th:style="'width:' + ${T(java.lang.Math).min(p.quantity * 100 / 100, 100)} + '%'">
+                                        </div>
+                                    </div>
+                                    <span class="stock-qty" th:text="${p.quantity + ' dona'}">0 dona</span>
+                                </div>
+                            </td>
+                            <td>
+                                    <span class="stock-badge"
+                                          th:classappend="${p.quantity == 0} ? ' stock-out' : (${p.quantity < lowStockThreshold} ? ' stock-low' : ' stock-ok')">
+                                        <i th:class="${p.quantity == 0} ? 'bi bi-x-circle-fill' : (${p.quantity < lowStockThreshold} ? 'bi bi-exclamation-triangle-fill' : 'bi bi-check-circle-fill')"></i>
+                                        <span th:text="${p.quantity == 0} ? 'Tugagan' : (${p.quantity < lowStockThreshold} ? 'Kam qoldi' : 'Yetarli')">Yetarli</span>
+                                    </span>
+                            </td>
+                        </tr>
+
+                        <!-- EMPTY -->
+                        <tr th:if="${products == null or products.isEmpty()}">
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-icon"><i class="bi bi-building"></i></div>
+                                    <div class="empty-title">Mahsulot topilmadi</div>
+                                    <div class="empty-desc">Qidiruv natijasi bo'sh yoki ombor bo'sh</div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- PAGINATION -->
+                    <div class="pagination-row" th:if="${products != null and !products.isEmpty()}">
+                        <div class="pagination-info">
+                            Jami <strong th:text="${totalElements}">0</strong> ta mahsulot
+                        </div>
+                        <div class="d-flex gap-1" th:if="${totalPages > 1}">
+                            <a th:href="@{/warehouse(page=${currentPage - 1}, search=${search})}"
+                               th:classappend="${currentPage == 0} ? ' disabled'"
+                               class="page-btn">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                            <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                                <a th:href="@{/warehouse(page=${i}, search=${search})}"
+                                   th:classappend="${i == currentPage} ? ' active'"
+                                   class="page-btn"
+                                   th:text="${i + 1}">1</a>
+                            </th:block>
+                            <a th:href="@{/warehouse(page=${currentPage + 1}, search=${search})}"
+                               th:classappend="${currentPage == totalPages - 1} ? ' disabled'"
+                               class="page-btn">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Kam qolganlar + Ombor qiymati -->
+            <div class="col-lg-4">
+
+                <!-- OMBOR QIYMATI -->
+                <div style="background:linear-gradient(135deg,#0f172a,#1e293b); border-radius:var(--radius); padding:22px; margin-bottom:16px; color:#fff;">
+                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.5; margin-bottom:6px;">
+                        Ombor umumiy qiymati
+                    </div>
+                    <div style="font-size:26px; font-weight:800; letter-spacing:-.5px;">
+                        <span th:text="${#numbers.formatDecimal(totalValue, 1, 'COMMA', 0, 'POINT')}">0</span>
+                        <small style="font-size:14px; font-weight:500; opacity:.6;"> so'm</small>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:12px;">
+                        <div style="background:rgba(255,255,255,.08); border-radius:9px; padding:10px 14px; flex:1; text-align:center;">
+                            <div style="font-size:18px; font-weight:800;" th:text="${totalProducts}">0</div>
+                            <div style="font-size:11px; opacity:.6; margin-top:2px;">Mahsulot</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,.08); border-radius:9px; padding:10px 14px; flex:1; text-align:center;">
+                            <div style="font-size:18px; font-weight:800;" th:text="${outOfStockCount}">0</div>
+                            <div style="font-size:11px; opacity:.6; margin-top:2px;">Tugagan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KAM QOLGANLAR -->
+                <div class="low-stock-panel">
+                    <div class="low-stock-header">
+                        <h6>
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            Kam qolgan mahsulotlar
+                        </h6>
+                        <span style="font-size:12px; font-weight:700; background:#fff; color:#b45309; padding:2px 9px; border-radius:20px;"
+                              th:text="${lowStockCount}">0</span>
+                    </div>
+
+                    <!-- Kam qolgan mahsulotlar ro'yxati -->
+                    <div th:if="${lowStockProducts != null and !lowStockProducts.isEmpty()}">
+                        <div class="low-stock-item"
+                             th:each="p, pStat : ${lowStockProducts}"
+                             th:if="${pStat.index < 8}">
+                            <div>
+                                <div class="low-stock-name" th:text="${p.name}">Mahsulot</div>
+                                <div class="low-stock-cat"
+                                     th:text="${p.category?.name ?: '—'}">Kategoriya</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <span class="stock-badge"
+                                      th:classappend="${p.quantity == 0} ? ' stock-out' : ' stock-low'"
+                                      th:text="${p.quantity + ' dona'}">0 dona</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bo'sh -->
+                    <div th:if="${lowStockProducts == null or lowStockProducts.isEmpty()}"
+                         style="text-align:center; padding:28px 16px;">
+                        <i class="bi bi-check-circle" style="font-size:28px; color:#10b981;"></i>
+                        <div style="font-size:13px; font-weight:600; color:var(--text); margin-top:8px;">
+                            Barcha mahsulotlar yetarli
+                        </div>
+                    </div>
+
+                    <!-- Ko'proq ko'rish -->
+                    <div th:if="${lowStockCount > 8}"
+                         style="padding:10px 16px; border-top:1px solid #fde68a; text-align:center;">
+                        <a th:href="@{/warehouse}" style="font-size:12.5px; font-weight:600; color:#b45309; text-decoration:none;">
+                            Yana <span th:text="${lowStockCount - 8}">0</span> ta bor
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
