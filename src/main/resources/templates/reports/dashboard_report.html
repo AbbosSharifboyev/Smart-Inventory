@@ -1,65 +1,420 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8"/>
     <style>
-        body { font-family: 'Arial', sans-serif; color: #333; }
-        .header { text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; }
-        .stat-box { background: #f3f4f6; padding: 10px; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #4f46e5; color: white; }
-        .warning { color: #ef4444; font-weight: bold; }
-        .center { text-align: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            background: #ffffff;
+        }
+
+        .page { padding: 32px 36px; }
+
+        /* ════════════════════════════════
+           COVER BAND
+        ════════════════════════════════ */
+        .cover-band {
+            background-color: #0f172a;
+            border-left: 6px solid #f59e0b;
+            border-radius: 10px;
+            padding: 20px 24px 18px 28px;
+            margin-bottom: 20px;
+        }
+
+        /* logo left, meta right — table trick */
+        .cover-row {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .cover-row td { border: none; padding: 0; vertical-align: middle; }
+        .cover-row td.logo-cell { width: 52px; }
+
+        .logo-box {
+            width: 44px; height: 44px;
+            background-color: #f59e0b;
+            border-radius: 10px;
+            text-align: center; line-height: 44px;
+            font-size: 22px; font-weight: 900;
+            color: #ffffff;
+        }
+
+        .brand-name { font-size: 16px; font-weight: 900; color: #ffffff; padding-left: 8px; }
+        .brand-sub  { font-size: 10px; color: #64748b; padding-left: 8px; margin-top: 2px; }
+
+        .cover-type { font-size: 16px; font-weight: 900; color: #f59e0b; text-align: right; }
+        .cover-sub  { font-size: 10px; color: #475569; text-align: right; margin-top: 3px; }
+        .cover-date { font-size: 10px; color: #64748b; text-align: right; margin-top: 2px; }
+
+        .cover-hr   { border: none; border-top: 1px solid #1e3a5f; margin: 10px 0; }
+        .cover-note { font-size: 10px; color: #64748b; }
+
+        /* ════════════════════════════════
+           STATS — 3 teng ustun
+           border-spacing ishlatilmaydi,
+           margin bilan ajratiladi
+        ════════════════════════════════ */
+        .stats-wrap { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .stats-wrap td {
+            width: 33.33%;
+            border: none;
+            padding: 0;
+            vertical-align: top;
+        }
+        .stats-wrap td + td { padding-left: 10px; }
+
+        .stat-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 13px 15px;
+        }
+
+        .stat-lbl {
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: #94a3b8; margin-bottom: 6px;
+        }
+
+        .stat-val { font-size: 28px; font-weight: 900; letter-spacing: -0.8px; line-height: 1; }
+        .val-amber { color: #d97706; }
+        .val-red   { color: #dc2626; }
+        .val-green { color: #059669; }
+
+        .stat-sub { font-size: 9px; color: #64748b; margin-top: 5px; }
+
+        .pbar { height: 3px; background-color: #e2e8f0; border-radius: 2px; margin-top: 10px; }
+        .pbar-a { height: 3px; background-color: #f59e0b; border-radius: 2px; width: 60%; }
+        .pbar-r { height: 3px; background-color: #ef4444; border-radius: 2px; width: 80%; }
+        .pbar-g { height: 3px; background-color: #10b981; border-radius: 2px; width: 45%; }
+
+        /* ════════════════════════════════
+           ALERT
+        ════════════════════════════════ */
+        .alert {
+            background-color: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-left: 4px solid #f97316;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #9a3412;
+        }
+
+        /* ════════════════════════════════
+           SECTION HEADER
+        ════════════════════════════════ */
+        .sec-hdr { width: 100%; border-collapse: collapse; margin-bottom: 9px; }
+        .sec-hdr td { border: none; padding: 0; }
+
+        .sec-title {
+            font-size: 12.5px; font-weight: 800;
+            color: #0f172a;
+            padding-left: 10px;
+            border-left: 3px solid #f59e0b;
+            line-height: 1.5;
+        }
+
+        .sec-count {
+            font-size: 10px; font-weight: 600;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        /* ════════════════════════════════
+           TABLES
+           KEY FIX: every th gets explicit
+           color:#c8d8e8 so dark bg won't
+           swallow the text
+        ════════════════════════════════ */
+        .rt {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+        }
+
+        /* --- thead --- */
+        .rt thead tr { background-color: #1e293b; }
+
+        .rt thead tr th {
+            background-color: #1e293b;   /* explicit — cascadedan emin bo'lish uchun */
+            color: #c8d8e8;              /* YAGONA TUZATISH: açıq ko'k-kulrang */
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            text-align: left;
+            padding: 9px 12px;
+            border: none;
+        }
+
+        .rt thead tr th.c { text-align: center; }
+
+        /* --- tbody --- */
+        .rt tbody tr:nth-child(odd)  { background-color: #ffffff; }
+        .rt tbody tr:nth-child(even) { background-color: #f8fafc; }
+
+        .rt tbody tr td {
+            background-color: transparent; /* zebra dan aladi */
+            color: #334155;
+            font-size: 10.5px;
+            padding: 9px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .rt tbody tr td.c  { text-align: center; }
+        .rt tbody tr td.n  { color: #94a3b8; font-weight: 700; font-size: 10px; }
+        .rt tbody tr td.b  { font-weight: 800; color: #0f172a; }
+
+        /* ════════════════════════════════
+           BADGES — har birida explicit rang
+        ════════════════════════════════ */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 800;
+            color: #334155;              /* fallback */
+            background-color: #f1f5f9;
+        }
+
+        .b-qty-ok  { background-color: #d1fae5; color: #065f46; }
+        .b-qty-low { background-color: #fef3c7; color: #92400e; }
+        .b-qty-out { background-color: #fee2e2; color: #b91c1c; }
+
+        .b-admin   { background-color: #fef3c7; color: #92400e; }
+        .b-manager { background-color: #dbeafe; color: #1e40af; }
+        .b-user    { background-color: #d1fae5; color: #065f46; }
+
+        .b-on      { background-color: #d1fae5; color: #065f46; }
+        .b-off     { background-color: #fee2e2; color: #b91c1c; }
+
+        /* ════════════════════════════════
+           DIVIDER
+        ════════════════════════════════ */
+        .divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+
+        /* ════════════════════════════════
+           NO DATA
+        ════════════════════════════════ */
+        .no-data-td {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* ════════════════════════════════
+           FOOTER
+        ════════════════════════════════ */
+        .foot-tbl { width: 100%; border-collapse: collapse; border-top: 1.5px solid #e2e8f0; padding-top: 12px; margin-top: 6px; }
+        .foot-tbl td { border: none; padding-top: 12px; font-size: 9px; color: #94a3b8; line-height: 1.6; }
+        .foot-tbl td.right { text-align: right; }
+
+        /* ════════════════════════════════
+           WATERMARK
+        ════════════════════════════════ */
+        .wm {
+            position: fixed;
+            bottom: 70px; right: 36px;
+            font-size: 76px; font-weight: 900;
+            color: #f59e0b; opacity: 0.04;
+            letter-spacing: -4px;
+            transform: rotate(-26deg);
+        }
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>Smart Store v2.0 - Tizim Hisoboti</h1>
-    <p th:text="'Sana: ' + ${reportDate}">01.01.2024</p>
+<div class="page">
+
+    <div class="wm">SMART</div>
+
+    <!-- ══ COVER ══ -->
+    <div class="cover-band">
+        <table class="cover-row">
+            <tr>
+                <td class="logo-cell">
+                    <div class="logo-box">S</div>
+                </td>
+                <td>
+                    <div class="brand-name">Smart Store</div>
+                    <div class="brand-sub">Management System</div>
+                </td>
+                <td>
+                    <div class="cover-type">Tizim Hisoboti</div>
+                    <div class="cover-sub">Smart Store v2.0 &#8212; Dashboard Report</div>
+                    <div class="cover-date">Sana: <span th:text="${reportDate}">01.01.2025 12:00</span></div>
+                </td>
+            </tr>
+        </table>
+        <hr class="cover-hr"/>
+        <div class="cover-note">
+            Bu hujjat Smart Store boshqaruv tizimi tomonidan avtomatik ravishda yaratilgan.
+            Tizim ma&#8217;lumotlari real vaqt rejimida olingan.
+        </div>
+    </div>
+
+    <!-- ══ STATS: 3 TENG USTUN ══ -->
+    <table class="stats-wrap">
+        <tr>
+            <td>
+                <div class="stat-card">
+                    <div class="stat-lbl">Bugungi buyurtmalar</div>
+                    <div class="stat-val val-amber" th:text="${totalOrders ?: 0}">0</div>
+                    <div class="stat-sub">Bugun amalga oshirilgan</div>
+                    <div class="pbar"><div class="pbar-a"></div></div>
+                </div>
+            </td>
+            <td>
+                <div class="stat-card">
+                    <div class="stat-lbl">Kam qolgan mahsulotlar</div>
+                    <div class="stat-val val-red"
+                         th:text="${lowStockProducts != null ? lowStockProducts.size() : 0}">0</div>
+                    <div class="stat-sub">Kritik miqdorda (&#8804; 5 ta)</div>
+                    <div class="pbar"><div class="pbar-r"></div></div>
+                </div>
+            </td>
+            <td>
+                <div class="stat-card">
+                    <div class="stat-lbl">Tizim foydalanuvchilari</div>
+                    <div class="stat-val val-green"
+                         th:text="${users != null ? users.size() : 0}">0</div>
+                    <div class="stat-sub">Ro&#8217;yxatda mavjud</div>
+                    <div class="pbar"><div class="pbar-g"></div></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ══ ALERT ══ -->
+    <div class="alert"
+         th:if="${lowStockProducts != null and !#lists.isEmpty(lowStockProducts)}">
+        &#9888; Diqqat!
+        <span th:text="${lowStockProducts.size()}">0</span>
+        ta mahsulot omborda kritik darajada kam qolgan.
+        Zudlik bilan to&#8217;ldirish tavsiya etiladi.
+    </div>
+
+    <!-- ══ LOW STOCK TABLE ══ -->
+    <table class="sec-hdr">
+        <tr>
+            <td><span class="sec-title">Kam qolgan mahsulotlar</span></td>
+            <td class="sec-count"
+                th:text="${lowStockProducts != null ? lowStockProducts.size() : 0} + ' ta'"></td>
+        </tr>
+    </table>
+
+    <table class="rt">
+        <thead>
+        <tr>
+            <th class="c" style="width:36px;">&#8470;</th>
+            <th>Mahsulot nomi</th>
+            <th>Kategoriya</th>
+            <th class="c">Qoldiq</th>
+            <th class="c">Holat</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p, st : ${lowStockProducts}">
+            <td class="c n" th:text="${st.count}">1</td>
+            <td class="b"   th:text="${p.name}">Mahsulot</td>
+            <td th:text="${p.category != null ? p.category.name
+                              : (p.categoryName != null ? p.categoryName : '&#8212;')}">Kategoriya</td>
+            <td class="c">
+                    <span class="badge"
+                          th:classappend="${p.quantity == 0} ? ' b-qty-out' : ' b-qty-low'"
+                          th:text="${p.quantity} + ' ta'">0 ta</span>
+            </td>
+            <td class="c">
+                    <span th:if="${p.quantity == 0}"
+                          class="badge b-qty-out">TUGAGAN</span>
+                <span th:unless="${p.quantity == 0}"
+                      class="badge b-qty-low">KRITIK</span>
+            </td>
+        </tr>
+        <tr th:if="${lowStockProducts == null or #lists.isEmpty(lowStockProducts)}">
+            <td colspan="5" class="no-data-td">
+                Kam qolgan mahsulotlar mavjud emas &#8212; ombor yetarli.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr class="divider"/>
+
+    <!-- ══ USERS TABLE ══ -->
+    <table class="sec-hdr">
+        <tr>
+            <td><span class="sec-title">Tizim foydalanuvchilari</span></td>
+            <td class="sec-count"
+                th:text="${users != null ? users.size() : 0} + ' ta'"></td>
+        </tr>
+    </table>
+
+    <table class="rt">
+        <thead>
+        <tr>
+            <th class="c" style="width:36px;">&#8470;</th>
+            <th>Foydalanuvchi</th>
+            <th>To&#8217;liq ism</th>
+            <th>Email</th>
+            <th class="c">Rol</th>
+            <th class="c">Holat</th>
+            <th>Oxirgi kirish</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u, st : ${users}">
+            <td class="c n" th:text="${st.count}">1</td>
+            <td class="b"   th:text="${u.username}">username</td>
+            <td th:text="${u.fullName != null and !u.fullName.isEmpty() ? u.fullName : '&#8212;'}">Ism</td>
+            <td style="font-size:10px; color:#334155;" th:text="${u.email}">email</td>
+            <td class="c">
+                    <span th:switch="${u.role?.name()}">
+                        <span th:case="'ADMIN'"   class="badge b-admin">ADMIN</span>
+                        <span th:case="'MANAGER'" class="badge b-manager">MANAGER</span>
+                        <span th:case="'USER'"    class="badge b-user">USER</span>
+                    </span>
+            </td>
+            <td class="c">
+                    <span th:if="${u.enabled}"
+                          class="badge b-on">Faol</span>
+                <span th:unless="${u.enabled}"
+                      class="badge b-off">Bloklangan</span>
+            </td>
+            <td style="font-size:10px; color:#64748b;"
+                th:text="${u.lastLogin != null
+                              ? #temporals.format(u.lastLogin, 'dd.MM.yyyy HH:mm')
+                              : 'Noma''lum'}">&#8212;</td>
+        </tr>
+        <tr th:if="${users == null or #lists.isEmpty(users)}">
+            <td colspan="7" class="no-data-td">Foydalanuvchilar topilmadi.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- ══ FOOTER ══ -->
+    <table class="foot-tbl">
+        <tr>
+            <td>
+                Bu hujjat Smart Store boshqaruv tizimi tomonidan avtomatik yaratilgan.<br/>
+                Hujjatning haqiqiyligi tizim orqali tekshirilishi mumkin.
+            </td>
+            <td class="right">
+                <strong>Smart Store v2.0</strong><br/>
+                Yaratildi: <span th:text="${reportDate}">01.01.2025 12:00</span>
+            </td>
+        </tr>
+    </table>
+
 </div>
-
-<div class="stat-box">
-    <h3>Umumiy statistika:</h3>
-    <p th:text="'Bugungi buyurtmalar soni: ' + ${totalOrders}">0</p>
-</div>
-
-<h3>Kam qolgan mahsulotlar:</h3>
-<table>
-    <thead>
-    <tr>
-        <th class="center">№</th>
-        <th>Mahsulot nomi</th>
-        <th>Kategoriya</th>
-        <th>Qoldiq</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="p, stat : ${lowStockProducts}">
-        <td class="center" th:text="${stat.count}">1</td>
-        <td th:text="${p.name}">Nomi</td>
-        <td th:text="${p.category.name}">Kategoriya</td>
-        <td class="warning" th:text="${p.quantity} + ' ta qoldi'">0</td>
-    </tr>
-    </tbody>
-</table>
-
-<h3>Tizim foydalanuvchilari:</h3>
-<table>
-    <thead>
-    <tr>
-        <th class="center">№</th>
-        <th>Foydalanuvchi</th>
-        <th>Rol</th>
-        <th>Oxirgi kirish</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="u, stat : ${users}">
-        <td class="center" th:text="${stat.count}">1</td>
-        <td th:text="${u.username}">admin</td>
-        <td th:text="${u.role}">ADMIN</td>
-        <td th:text="${u.lastLogin != null ? #temporals.format(u.lastLogin, 'dd.MM.yyyy HH:mm') : 'Noma''lum'}"></td>    </tr>
-    </tbody>
-</table>
 </body>
 </html>
