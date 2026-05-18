@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.pdp.smartinventory.model.domain.Orders;
-import uz.pdp.smartinventory.model.dto.OrderDto;
 import uz.pdp.smartinventory.model.enums.OrderStatus;
 
 import java.math.BigDecimal;
