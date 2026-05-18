@@ -12,6 +12,6 @@ public class OrderItemDto {
     private UUID productId;
     private String productName;
     private Integer count;
-    private BigDecimal priceAtOrder;   //O`sha paytdagi narx
+    private BigDecimal priceAtOrder;
     private BigDecimal subTotal;   //count * priceAtOrder
 }

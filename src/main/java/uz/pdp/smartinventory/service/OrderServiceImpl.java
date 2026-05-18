@@ -1,6 +1,5 @@
 package uz.pdp.smartinventory.service;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +12,7 @@ import uz.pdp.smartinventory.model.domain.Orders;
 import uz.pdp.smartinventory.model.domain.Products;
 import uz.pdp.smartinventory.model.domain.Users;
 import uz.pdp.smartinventory.model.dto.*;
+import uz.pdp.smartinventory.model.enums.MovementType;
 import uz.pdp.smartinventory.model.enums.OrderStatus;
 import uz.pdp.smartinventory.repository.OrderRepository;
 import uz.pdp.smartinventory.repository.ProductRepository;
@@ -33,16 +33,18 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final ActionLogService actionLogService;
+    private final StockMovementService stockMovementService;
 
     protected OrderServiceImpl(OrderRepository repository,
                                OrderMapper mapper,
                                OrderValidator validator,
                                ProductRepository productRepository,
-                               UserRepository userRepository, ActionLogService actionLogService) {
+                               UserRepository userRepository, ActionLogService actionLogService, StockMovementService stockMovementService) {
         super(repository, mapper, validator);
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.actionLogService = actionLogService;
+        this.stockMovementService = stockMovementService;
     }
 
     @Override
@@ -50,18 +52,17 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
     public OrderDto create(OrderRequestDto dto) {
         validator.validateCreate(dto);
 
-        // 2. Foydalanuvchini olish
         Users user = userRepository.findByIdAndDeletedFalse(dto.getUserId())
                 .orElseThrow(() ->new RuntimeException("Foydalanuvchi topilmadi"));
 
-        // 3. Entity yaratyapmiz (Mapper orqali)
+        // Entity yaratish (Mapper orqali)
         Orders order = mapper.toEntity(dto);
         order.setUser(user);  // Userni biriktiramiz
         order.setItems(new ArrayList<>());
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        // 4. OrderItems-ni shakllantirish va Omborni yangilash
+        // OrderItems-ni shakllantirish va Omborni yangilash
         for (OrderItemRequestDto itemDto : dto.getItems()) {
             Products product = productRepository.findByIdAndDeletedFalse(itemDto.getProductId())
                     .orElseThrow(() -> new RuntimeException("Mahsulot topilmadi"));
@@ -73,21 +74,29 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
             orderItem.setCount(itemDto.getCount());
             orderItem.setPriceAtOrder(product.getPrice());  // Narxni muhrlash (Snapshot)
 
-            // Mahsulot miqdorini kamaytirish (Stock update)
-            product.setQuantity(product.getQuantity() - itemDto.getCount());
-            productRepository.save(product);
-
             // Jami summani hisoblash
-            BigDecimal subTotal = product.getPrice().multiply(BigDecimal.valueOf(itemDto.getCount()));
+            BigDecimal subTotal = product.getPrice()
+                    .multiply(BigDecimal.valueOf(itemDto.getCount()));
             totalAmount = totalAmount.add(subTotal);
 
             order.getItems().add(orderItem);
         }
         order.setTotalAmount(totalAmount);
-
         Orders savedOrder = repository.save(order);
-        int count = order.getItems().size();
-        actionLogService.saveLog("Yangi buyurtma qabul qilindi: " + count + " ta mahsulot", "SUCCESS");
+
+        for (OrderItems item : savedOrder.getItems()) {
+            stockMovementService.createMovement(
+                    item.getProduct().getId(),
+                    item.getCount(),
+                    MovementType.OUT,
+                    "Buyurtma yaratildi. Buyurtma ID: " + savedOrder.getId(),
+                    savedOrder,
+                    item.getPriceAtOrder()
+            );
+        }
+
+        actionLogService.saveLog("Yangi buyurtma qabul qilindi: "
+                + order.getItems().size() + " ta mahsulot", "SUCCESS");
         return mapper.toDto(savedOrder);
     }
 
@@ -117,9 +126,16 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
     private void restockProducts(Orders order) {
         for (OrderItems item : order.getItems()) {
             Products product = item.getProduct();
-            int updatedQuantity = product.getQuantity() + item.getCount();
-            product.setQuantity(updatedQuantity);
-            productRepository.save(product);
+            if (product != null){
+                stockMovementService.createMovement(
+                        product.getId(),
+                        item.getCount(),
+                        MovementType.IN,
+                        "Buyurtma bekor qilindi. Buyurtma ID: " + order.getId(),
+                        order,
+                        item.getPriceAtOrder()
+                );
+            }
         }
     }
 

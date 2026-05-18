@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirim / Chiqim | Smart Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fef3c7;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --blue: #3b82f6;
+            --blue-light: #dbeafe;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+            --font: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── TOPBAR ── */
+        .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .breadcrumb-nav { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+        .breadcrumb-nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; }
+        .breadcrumb-nav a:hover { color: var(--text); }
+        .breadcrumb-sep { color: var(--text-light); font-size: 11px; }
+        .breadcrumb-current { color: var(--text); font-weight: 600; }
+
+        /* ── PAGE ── */
+        .page-body { flex: 1; padding: 32px; animation: fadeUp .3s ease both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+        .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── STAT CARDS ── */
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; position: relative; overflow: hidden; transition: transform .2s, box-shadow .2s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius) var(--radius) 0 0; }
+        .stat-card.c-green::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+        .stat-card.c-red::before    { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .stat-card.c-blue::before   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .s-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; }
+        .s-icon.g { background: var(--success-light); color: #059669; }
+        .s-icon.r { background: var(--danger-light);  color: #dc2626; }
+        .s-icon.b { background: var(--blue-light);    color: #2563eb; }
+        .s-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin: 14px 0 5px; }
+        .s-value { font-size: 26px; font-weight: 800; letter-spacing: -.5px; color: var(--text); }
+        .s-value small { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+
+        /* ── TOOLBAR ── */
+        .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        /* ── FILTER ── */
+        .filter-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 16px;        /* ← padding kamaytiring */
+            display: flex;
+            align-items: center;
+            gap: 8px;                  /* ← gap kamaytiring */
+            flex-wrap: wrap;
+        }        .filter-input { font-family: var(--font); font-size: 13px; font-weight: 500; border: 1.5px solid var(--border); border-radius: 9px; padding: 8px 12px; color: var(--text); background: var(--bg); outline: none; transition: border .15s; }
+        .filter-input:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,.1); }
+        .filter-select { font-family: var(--font); font-size: 13px; font-weight: 500; border: 1.5px solid var(--border); border-radius: 9px; padding: 8px 28px 8px 12px; color: var(--text); background: var(--bg); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px; transition: border .15s; }
+        .filter-select:focus { border-color: #a78bfa; }
+
+        /* ── BUTTONS ── */
+        .btn-action { font-family: var(--font); font-size: 13px; font-weight: 700; border-radius: 10px; padding: 9px 18px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; text-decoration: none; }
+        .btn-primary { background: var(--text); color: #fff; }
+        .btn-primary:hover { background: #1e293b; color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,23,42,.2); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #059669; color: #fff; transform: translateY(-1px); }
+        .btn-ghost { background: var(--surface); color: var(--text-muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--bg); color: var(--text); border-color: #cbd5e1; }
+
+        /* ── TABLE ── */
+        .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .table-card table { width: 100%; border-collapse: collapse; }
+        .table-card thead tr { background: var(--surface-2); border-bottom: 1px solid var(--border); }
+        .table-card thead th { padding: 11px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); white-space: nowrap; }
+        .table-card tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+        .table-card tbody tr:last-child { border-bottom: none; }
+        .table-card tbody tr:hover { background: #f8fafc; }
+        .table-card tbody td { padding: 13px 16px; font-size: 13.5px; font-weight: 500; vertical-align: middle; }
+
+        /* ── TYPE BADGE ── */
+        .type-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+        .type-in  { background: var(--success-light); color: #059669; }
+        .type-out { background: var(--danger-light);  color: #dc2626; }
+
+        /* ── AMOUNT ── */
+        .amount-in  { font-weight: 700; color: #059669; }
+        .amount-out { font-weight: 700; color: #dc2626; }
+
+        /* ── PRODUCT CHIP ── */
+        .product-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-light); color: #1d4ed8; border-radius: 6px; padding: 3px 9px; font-size: 12.5px; font-weight: 600; }
+
+        /* ── PAGINATION ── */
+        .pagination-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-top: 1px solid var(--border); }
+        .pagination-info { font-size: 12.5px; color: var(--text-muted); font-weight: 500; }
+        .page-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; transition: all .15s; text-decoration: none; color: var(--text); }
+        .page-btn:hover  { border-color: #a78bfa; background: #f5f3ff; color: var(--text); }
+        .page-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+        .page-btn.disabled { opacity: .4; pointer-events: none; }
+
+        /* ── EMPTY ── */
+        .empty-state { text-align: center; padding: 52px 24px; }
+        .empty-icon  { font-size: 40px; color: #cbd5e1; margin-bottom: 10px; }
+        .empty-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+        .empty-desc  { font-size: 13px; color: var(--text-muted); }
+
+        /* ── MODAL ── */
+        .modal-card { border: none; border-radius: 18px; overflow: hidden; max-width: 500px; }
+        .modal-head { background: var(--text); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .modal-head h5 { color: #fff; font-weight: 700; font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .modal-close { background: rgba(255,255,255,.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; }
+        .modal-close:hover { background: rgba(255,255,255,.2); }
+        .modal-body-inner { padding: 24px; }
+
+        /* ── FORM ── */
+        .f-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 6px; display: block; }
+        .f-input { width: 100%; font-family: var(--font); font-size: 13.5px; font-weight: 500; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); background: #fff; outline: none; transition: border .15s, box-shadow .15s; }
+        .f-input:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,.1); }
+        .f-input.is-invalid { border-color: var(--danger); }
+        .f-select { width: 100%; font-family: var(--font); font-size: 13.5px; font-weight: 500; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 32px 10px 14px; color: var(--text); background: #fff; outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 15px; transition: border .15s; }
+        .f-select:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,.1); }
+        .invalid-msg { font-size: 12px; color: var(--danger); margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+
+        /* ── ALERT ── */
+        .alert-success { background: var(--success-light); border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #065f46; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .alert-danger  { background: var(--danger-light);  border: 1px solid #fecaca;  border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #991b1b; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+
+        @media(max-width: 768px) { .main-content { margin-left: 0; } .page-body { padding: 16px; } }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='transactions')}"></div>
+
+<div class="main-content">
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a th:href="@{/dashboard}">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Kirim / Chiqim</span>
+        </nav>
+    </header>
+
+    <main class="page-body">
+
+        <!-- PAGE HEADER -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <div class="page-title">Kirim / Chiqim</div>
+                <div class="page-subtitle">Ombor harakatlari tarixi va boshqaruvi</div>
+            </div>
+            <!-- KIRIM QILISH TUGMASI -->
+            <button class="btn-action btn-success"
+                    data-bs-toggle="modal" data-bs-target="#stockInModal">
+                <i class="bi bi-plus-circle-fill"></i>
+                Qo'lda kirim qilish
+            </button>
+        </div>
+
+        <!-- FLASH MESSAGES -->
+        <div class="alert-success" th:if="${successMessage}">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div class="alert-danger" th:if="${errorMessage}">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar mb-3">
+            <form th:action="@{/transactions}" method="get"
+                  class="d-flex align-items-center gap-2 flex-wrap w-100">
+
+                <i class="bi bi-funnel" style="color:var(--text-muted); font-size:14px; flex-shrink:0;"></i>
+
+                <select name="type" class="filter-select" style="width:130px; flex-shrink:0;">
+                    <option value="">Barcha turlar</option>
+                    <option value="IN"  th:selected="${param.type == 'IN'}">🟢 Kirim</option>
+                    <option value="OUT" th:selected="${param.type == 'OUT'}">🔴 Chiqim</option>
+                </select>
+
+                <input type="text" name="product" class="filter-input"
+                       style="flex:1; min-width:140px;" placeholder="Mahsulot nomi..."
+                       th:value="${param.product}">
+
+                <input type="date" name="from" class="filter-input"
+                       style="width:150px; flex-shrink:0;"
+                       th:value="${param.from}"
+                       title="Boshlanish sanasi">
+
+                <span style="font-size:11px; font-weight:600; color:var(--text-light); flex-shrink:0;">—</span>
+
+                <input type="date" name="to" class="filter-input"
+                       style="width:150px; flex-shrink:0;"
+                       th:value="${param.to}"
+                       title="Tugash sanasi">
+
+                <button type="submit" class="btn-action btn-primary" style="padding:8px 16px; flex-shrink:0;">
+                    <i class="bi bi-search"></i> Qidirish
+                </button>
+
+                <a th:href="@{/transactions}" class="btn-action btn-ghost"
+                   style="padding:8px 12px; flex-shrink:0;" title="Filterni tozalash">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+
+            </form>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tur</th>
+                    <th>Mahsulot</th>
+                    <th>Miqdor</th>
+                    <th>Narx</th>
+                    <th>Sabab</th>
+                    <th>Sana</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- MA'LUMOT BOR -->
+                <tr th:each="m, stat : ${movements}"
+                    th:if="${movements != null and !movements.isEmpty()}">
+                    <td style="color:var(--text-muted); font-size:12px;"
+                        th:text="${movementPage.number * movementPage.size + stat.index + 1}">1</td>
+                    <td>
+                            <span class="type-badge"
+                                  th:classappend="${m.type == 'IN'} ? ' type-in' : ' type-out'">
+                                <i th:class="${m.type == 'IN'} ? 'bi bi-arrow-down-circle-fill' : 'bi bi-arrow-up-circle-fill'"></i>
+                                <span th:text="${m.type == 'IN'} ? 'Kirim' : 'Chiqim'">Kirim</span>
+                            </span>
+                    </td>
+                    <td>
+                            <span class="product-chip">
+                                <i class="bi bi-box" style="font-size:11px;"></i>
+                                <span th:text="${m.productName}">Mahsulot</span>
+                            </span>
+                    </td>
+                    <td style="font-weight:700;"
+                        th:text="${m.quantity + ' dona'}">0 dona</td>
+                    <td>
+                        <span th:if="${m.priceAtMovement != null}">
+                            <span th:class="${m.type == 'IN'} ? 'amount-in' : 'amount-out'">
+                                <span th:text="${#numbers.formatDecimal(m.priceAtMovement, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                <small style="font-size:11px; font-weight:500; color:var(--text-muted);"> so'm</small>
+                            </span>
+                        </span>
+                        <span th:unless="${m.priceAtMovement != null}"
+                              style="color:var(--text-light);">—</span>
+                    </td>
+                    <td style="font-size:12.5px; color:var(--text-muted);">
+                        <!-- Sabab matni -->
+                        <div th:if="${m.reason != null}"
+                             style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;"
+                             th:title="${m.reason}"
+                             th:text="${m.reason}">—</div>
+
+                        <!-- Buyurtma ID — alohida chip -->
+                        <div th:if="${m.orderId != null}" style="margin-top:3px;">
+                            <span style="background:var(--blue-light); color:#1d4ed8; border-radius:5px;
+                             padding:2px 7px; font-size:11px; font-weight:700;">
+                                <i class="bi bi-receipt" style="font-size:10px;"></i>
+                                #<span th:text="${m.orderId.toString().substring(0, 8)}">id</span>
+                            </span>
+                        </div>
+
+                        <span th:if="${m.reason == null and m.orderId == null}"
+                              style="color:var(--text-light);">—</span>
+                    </td>
+                    <td style="font-size:12px; color:var(--text-muted);"
+                        th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                        01.01.2026
+                    </td>
+                </tr>
+
+                <!-- BO'SH HOLAT -->
+                <tr th:if="${movements == null or movements.isEmpty()}">
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="bi bi-arrow-left-right"></i></div>
+                            <div class="empty-title">Harakatlar mavjud emas</div>
+                            <div class="empty-desc">
+                                Yuqoridagi <strong>"Qo'lda kirim qilish"</strong> tugmasini bosib birinchi kirimni qo'shing
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- PAGINATION -->
+            <div class="pagination-row"
+                 th:if="${movements != null and !movements.isEmpty()}">
+                <div class="pagination-info">
+                    Jami <strong th:text="${movementPage.totalElements}">0</strong> ta harakat
+                    <span style="margin-left:8px; color:var(--text-light);">
+                        (<span th:text="${movementPage.number + 1}">1</span> /
+                        <span th:text="${movementPage.totalPages}">1</span> sahifa)
+                    </span>
+                </div>
+                <div class="d-flex gap-1" th:if="${movementPage.totalPages > 1}">
+                    <a th:href="@{/transactions(page=${movementPage.number - 1})}"
+                       th:classappend="${movementPage.first} ? ' disabled'"
+                       class="page-btn">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                    <th:block th:each="i : ${#numbers.sequence(0, movementPage.totalPages - 1)}">
+                        <a th:href="@{/transactions(page=${i})}"
+                           th:classappend="${i == movementPage.number} ? ' active'"
+                           class="page-btn"
+                           th:text="${i + 1}">1</a>
+                    </th:block>
+                    <a th:href="@{/transactions(page=${movementPage.number + 1})}"
+                       th:classappend="${movementPage.last} ? ' disabled'"
+                       class="page-btn">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ═══════════ MODAL: Qo'lda Kirim Qilish ═══════════ -->
+<div class="modal fade" id="stockInModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+        <div class="modal-content modal-card">
+
+            <!-- MODAL HEADER -->
+            <div class="modal-head">
+                <h5>
+                    <i class="bi bi-box-arrow-in-down"></i>
+                    Qo'lda kirim qilish
+                </h5>
+                <button class="modal-close" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg" style="font-size:13px;"></i>
+                </button>
+            </div>
+
+            <!-- MODAL BODY -->
+            <div class="modal-body-inner">
+                <form th:action="@{/transactions/in}" method="post" id="stockInForm">
+
+                    <!-- Mahsulot tanlash -->
+                    <div class="mb-3">
+                        <label class="f-label">Mahsulot</label>
+                        <select name="productId" class="f-select" required id="productSelect">
+                            <option value="">— Mahsulot tanlang —</option>
+                            <option th:each="p : ${products}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}">Mahsulot</option>
+                        </select>
+                    </div>
+
+                    <!-- Miqdor -->
+                    <div class="mb-3">
+                        <label class="f-label">Miqdor (dona)</label>
+                        <input type="number" name="quantity" class="f-input"
+                               min="1" placeholder="Masalan: 50" required
+                               id="quantityInput">
+                    </div>
+
+                    <!-- Sabab -->
+                    <div class="mb-4">
+                        <label class="f-label">Sabab / Izoh</label>
+                        <input type="text" name="reason" class="f-input"
+                               placeholder="Masalan: Yetkazib beruvchidan qabul qilindi">
+                    </div>
+
+                    <!-- Info box -->
+                    <div style="background:var(--success-light); border:1px solid #a7f3d0; border-radius:10px; padding:12px 14px; font-size:12.5px; color:#065f46; display:flex; gap:8px; align-items:flex-start; margin-bottom:20px;">
+                        <i class="bi bi-info-circle-fill" style="flex-shrink:0; margin-top:1px;"></i>
+                        <span>Kirim qilingan miqdor mahsulotning mavjud qoldig'iga <strong>qo'shiladi</strong>. Bu amal avtomatik ombor harakati yozuvini yaratadi.</span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn-action btn-success" style="flex:1; justify-content:center;">
+                            <i class="bi bi-check2-circle"></i> Kirim qilish
+                        </button>
+                        <button type="button" class="btn-action btn-ghost"
+                                data-bs-dismiss="modal" style="padding:9px 18px;">
+                            Bekor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Xato bo'lsa modalni avtomatik oching
+    window.addEventListener('DOMContentLoaded', () => {
+        const hasError = /*[[${errorMessage != null}]]*/ false;
+        if (hasError) {
+            const modal = new bootstrap.Modal(document.getElementById('stockInModal'));
+            modal.show();
+        }
+    });
+
+    // Form yuborilayotganda tugmani disable qiling (ikki marta bosilmasin)
+    document.getElementById('stockInForm').addEventListener('submit', function () {
+        const btn = this.querySelector('button[type="submit"]');
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saqlanmoqda...';
+        btn.disabled = true;
+    });
+</script>
+</body>
+</html>
