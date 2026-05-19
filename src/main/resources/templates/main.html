@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Inventory — Ombor boshqaruv tizimi</title>
+    <title>SmartStore — Savdo va Omborlarni Boshqarish Ekotizimi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -58,7 +58,7 @@
         }
 
         .logo-text {
-            font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -.2px;
+            font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -.2px;
         }
 
         .nav-links { display: flex; align-items: center; gap: 4px; }
@@ -91,7 +91,7 @@
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center;
             text-align: center;
-            padding: 100px 24px 60px;
+            padding: 120px 24px 60px;
             position: relative;
             overflow: hidden;
         }
@@ -105,7 +105,6 @@
             pointer-events: none;
         }
 
-        /* grid dots */
         .hero::after {
             content: '';
             position: absolute; inset: 0;
@@ -115,7 +114,7 @@
             mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
         }
 
-        .hero-content { position: relative; z-index: 1; max-width: 760px; }
+        .hero-content { position: relative; z-index: 1; max-width: 840px; }
 
         .hero-badge {
             display: inline-flex; align-items: center; gap: 7px;
@@ -127,27 +126,23 @@
             color: #fbbf24;
             margin-bottom: 28px;
         }
-        .hero-badge i { font-size: 13px; }
 
         .hero-title {
-            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.15;
             letter-spacing: -.04em;
             color: #fff;
             margin-bottom: 22px;
         }
 
-        .hero-title .accent {
-            color: var(--primary);
-            position: relative;
-        }
+        .hero-title .accent { color: var(--primary); }
 
         .hero-sub {
             font-size: 1.05rem;
             color: var(--muted);
             line-height: 1.7;
-            max-width: 540px;
+            max-width: 620px;
             margin: 0 auto 40px;
             font-weight: 400;
         }
@@ -189,7 +184,6 @@
             background: rgba(255,255,255,.05);
         }
 
-        /* stats strip */
         .hero-stats {
             display: flex; align-items: center; justify-content: center;
             gap: 32px; margin-top: 52px;
@@ -200,9 +194,8 @@
         .stat-lbl  { font-size: 12.5px; color: var(--muted); margin-top: 3px; font-weight: 500; }
         .stat-sep  { width: 1px; height: 40px; background: var(--border); }
 
-        /* ── FEATURES ── */
+        /* ── SECTION CORE ── */
         .section { padding: 96px 40px; }
-
         .section-label {
             font-size: 12px; font-weight: 700; text-transform: uppercase;
             letter-spacing: .1em; color: var(--primary);
@@ -213,20 +206,53 @@
             content: ''; flex: 1; max-width: 40px;
             height: 1px; background: rgba(245,158,11,.3);
         }
-
         .section-title {
             font-size: clamp(1.6rem, 3vw, 2.2rem);
             font-weight: 800; letter-spacing: -.03em;
             color: #fff; text-align: center; margin-bottom: 12px;
         }
-
         .section-sub {
             text-align: center; color: var(--muted);
-            font-size: .95rem; max-width: 480px; margin: 0 auto 56px;
+            font-size: .95rem; max-width: 580px; margin: 0 auto 56px;
             line-height: 1.7;
         }
 
-        /* feature grid */
+        /* ── UNIQUE ARCHITECTURE SPLIT (ADMIN vs USER) ── */
+        .split-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .split-panel {
+            background: linear-gradient(145deg, #1e293b 0%, #111827 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+        }
+        .split-panel.admin-side { border-left: 4px solid var(--primary); }
+        .split-panel.user-side { border-left: 4px solid #10b981; }
+
+        .panel-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 30px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px;
+        }
+        .pb-admin { background: rgba(245,158,11,.15); color: var(--primary); }
+        .pb-user { background: rgba(16,185,129,.15); color: #10b981; }
+
+        .panel-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+        .panel-text { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+
+        .panel-features { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+        .panel-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: #cbd5e1; }
+        .panel-features li i { font-size: 14px; margin-top: 2px; }
+        .admin-side li i { color: var(--primary); }
+        .user-side li i { color: #10b981; }
+
+        /* ── FEATURES GRID ── */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -234,312 +260,291 @@
             max-width: 1100px;
             margin: 0 auto;
         }
-
         .feature-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 28px;
             transition: all .2s;
-            position: relative;
-            overflow: hidden;
         }
-
-        .feature-card::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            opacity: 0;
-            transition: opacity .2s;
-        }
-
-        .feature-card:hover { border-color: rgba(245,158,11,.25); transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,.25); }
-        .feature-card:hover::before { opacity: 1; }
-
+        .feature-card:hover { border-color: rgba(245,158,11,.25); transform: translateY(-3px); }
         .feature-icon {
-            width: 48px; height: 48px;
-            border-radius: 12px;
+            width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
+            font-size: 20px; margin-bottom: 18px;
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 18px;
+        }
+
+        /* 🆕 Yangi qo'shiladigan qism: ikonkalar vizual muvozanati uchun */
+        .feature-icon i {
+            font-size: 24px; /* 20px dan 24px ga ko'tardik */
+            line-height: 1;
+            display: inline-block;
         }
         .fi-yellow  { background: rgba(245,158,11,.15); color: var(--primary); }
         .fi-blue    { background: rgba(59,130,246,.12);  color: #60a5fa; }
         .fi-green   { background: rgba(16,185,129,.12);  color: #34d399; }
         .fi-purple  { background: rgba(139,92,246,.12);  color: #a78bfa; }
-        .fi-red     { background: rgba(239,68,68,.12);   color: #f87171; }
-        .fi-teal    { background: rgba(20,184,166,.12);  color: #2dd4bf; }
-
-        .feature-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-        .feature-text  { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
-
-        /* ── ROLES SECTION ── */
-        .roles-section {
-            padding: 80px 40px;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .roles-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .role-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            text-align: center;
-            transition: all .2s;
-        }
-        .role-card:hover { border-color: rgba(245,158,11,.3); }
-
-        .role-avatar {
-            width: 52px; height: 52px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
-            margin: 0 auto 14px;
-        }
-        .ra-yellow { background: rgba(245,158,11,.15); color: var(--primary); }
-        .ra-blue   { background: rgba(59,130,246,.12);  color: #60a5fa; }
-        .ra-green  { background: rgba(16,185,129,.12);  color: #34d399; }
-
-        .role-name   { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 10px; }
-        .role-perms  { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-        .role-perms li {
-            display: flex; align-items: center; gap: 7px;
-            font-size: 12.5px; color: var(--muted);
-        }
-        .role-perms li i { font-size: 11px; color: #34d399; }
 
         /* ── CTA BANNER ── */
-        .cta-banner {
-            padding: 96px 40px;
-            text-align: center;
-        }
-
+        .cta-banner { padding: 96px 40px; text-align: center; }
         .cta-box {
-            max-width: 640px;
-            margin: 0 auto;
-            background: var(--surface);
-            border: 1px solid rgba(245,158,11,.2);
-            border-radius: 24px;
-            padding: 56px 48px;
-            position: relative;
-            overflow: hidden;
+            max-width: 700px; margin: 0 auto;
+            background: var(--surface); border: 1px solid rgba(245,158,11,.2);
+            border-radius: 24px; padding: 56px 48px;
         }
-        .cta-box::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: radial-gradient(ellipse 60% 60% at 50% -20%, rgba(245,158,11,.12) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .cta-title { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 14px; letter-spacing: -.03em; }
-        .cta-sub   { font-size: .93rem; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
 
         /* ── FOOTER ── */
         footer {
-            padding: 28px 40px;
-            border-top: 1px solid var(--border);
+            padding: 28px 40px; border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
             flex-wrap: wrap; gap: 12px;
         }
-        footer p { font-size: 13px; color: var(--muted); }
 
-        /* animation */
-        .animate-in {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: animIn .5s ease forwards;
-        }
-        @keyframes animIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Animation Helpers */
+        .animate-in { opacity: 0; transform: translateY(20px); animation: animIn .5s ease forwards; }
+        @keyframes animIn { to { opacity: 1; transform: translateY(0); } }
         .delay-1 { animation-delay: .1s; }
         .delay-2 { animation-delay: .2s; }
         .delay-3 { animation-delay: .3s; }
 
+        @media (max-width: 992px) {
+            .split-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 768px) {
             .navbar { padding: 14px 20px; }
             .nav-links { display: none; }
             .section { padding: 64px 20px; }
-            .roles-grid { grid-template-columns: 1fr; }
-            .stat-sep { display: none; }
         }
     </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar">
     <a href="/" class="nav-logo">
-        <div class="logo-icon"><i class="bi bi-box-seam"></i></div>
-        <span class="logo-text">Smart Inventory</span>
+        <div class="logo-icon"><i class="bi bi-shop"></i></div>
+        <span class="logo-text">SmartStore</span>
     </a>
+
     <div class="nav-links">
+        <a href="#ecosystem" class="nav-link-item">Tizim Arxitekturasi</a>
         <a href="#features" class="nav-link-item">Imkoniyatlar</a>
-        <a href="#roles" class="nav-link-item">Rollar</a>
-        <a href="/auth/login" class="nav-link-item">Kirish</a>
+
+        <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/auth/login}" class="nav-link-item">Kirish</a>
+        </th:block>
+
+        <th:block sec:authorize="isAuthenticated()">
+            <a sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/dashboard}" class="nav-link-item" style="color:var(--primary);">Dashboard Panel</a>
+            <a sec:authorize="hasRole('USER')" th:href="@{/orders}" class="nav-link-item" style="color:#10b981;">Buyurtmalarim</a>
+        </th:block>
     </div>
-    <a href="/auth/login" class="nav-cta">
-        <i class="bi bi-arrow-right-circle-fill"></i> Boshlash
-    </a>
+
+    <th:block sec:authorize="isAnonymous()">
+        <a th:href="@{/auth/login}" class="nav-cta">
+            <i class="bi bi-arrow-right-circle-fill"></i> Boshlash
+        </a>
+    </th:block>
+    <th:block sec:authorize="isAuthenticated()">
+        <a th:href="@{/auth/logout}" class="nav-cta" style="background:#ef4444; box-shadow:0 2px 10px rgba(239,68,68,.3);">
+            <i class="bi bi-box-arrow-right"></i> Chiqish
+        </a>
+    </th:block>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
     <div class="hero-content">
         <div class="hero-badge animate-in">
-            <i class="bi bi-stars"></i> Zamonaviy ombor boshqaruv tizimi
+            <i class="bi bi-lightning-charge-fill"></i> SmartStore v2.5 B2B & B2C Platformasi
         </div>
         <h1 class="hero-title animate-in delay-1">
-            Omboringizni <span class="accent">aqlli</span><br> boshqaring
+            Yagona platforma. Ikki xil <span class="accent">mukammal</span> dunyo.
         </h1>
         <p class="hero-sub animate-in delay-2">
-            Smart Inventory — mahsulotlar, kategoriyalar, buyurtmalar va foydalanuvchilarni bir joyda boshqarish imkonini beruvchi professional tizim.
+            SmartStore — biznes egalari uchun chuqur analitika va ERP ombor nazoratini, xaridorlar (User) uchun esa chaqmoqdek tezkor onlayn buyurtma berish interfeysini taqdim etuvchi zamonaviy ekotizimdir.
         </p>
-        <div class="hero-actions animate-in delay-3">
-            <a href="/auth/login" class="btn-hero-primary">
-                <i class="bi bi-box-arrow-in-right"></i> Tizimga kirish
+
+        <div class="hero-actions animate-in delay-3" sec:authorize="isAnonymous()">
+            <a th:href="@{/auth/login}" class="btn-hero-primary">
+                <i class="bi bi-shield-lock"></i> Portaldan kirish
             </a>
-            <a href="/auth/register" class="btn-hero-ghost">
-                <i class="bi bi-person-plus"></i> Ro'yxatdan o'tish
+            <a th:href="@{/auth/register}" class="btn-hero-ghost">
+                <i class="bi bi-person-plus-fill"></i> Mijoz sifatida ro'yxatdan o'tish
             </a>
         </div>
+
+        <div class="hero-actions animate-in delay-3" sec:authorize="isAuthenticated()">
+            <a sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/dashboard}" class="btn-hero-primary">
+                <i class="bi bi-speedometer2"></i> Tizim boshqaruviga o'tish
+            </a>
+            <a sec:authorize="hasRole('USER')" th:href="@{/products}" class="btn-hero-primary" style="background:#10b981; box-shadow: 0 4px 20px rgba(16,185,129,.35);">
+                <i class="bi bi-bag-plus"></i> Mahsulotlar katalogi
+            </a>
+        </div>
+
         <div class="hero-stats animate-in delay-3">
             <div class="stat-item">
-                <div class="stat-num">∞</div>
-                <div class="stat-lbl">Mahsulotlar</div>
+                <div class="stat-num">ERP</div>
+                <div class="stat-lbl">Ombor Tahlili</div>
             </div>
             <div class="stat-sep"></div>
             <div class="stat-item">
-                <div class="stat-num">3</div>
-                <div class="stat-lbl">Foydalanuvchi roli</div>
+                <div class="stat-num">B2C</div>
+                <div class="stat-lbl">Tezkor Buyurtma</div>
             </div>
             <div class="stat-sep"></div>
             <div class="stat-item">
-                <div class="stat-num">24/7</div>
-                <div class="stat-lbl">Ishlash vaqti</div>
-            </div>
-            <div class="stat-sep"></div>
-            <div class="stat-item">
-                <div class="stat-num">100%</div>
-                <div class="stat-lbl">Xavfsizlik</div>
+                <div class="stat-num">Real-Time</div>
+                <div class="stat-lbl">Harakatlar monitoringi</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FEATURES -->
+<section class="section" id="ecosystem" style="border-top: 1px solid var(--border); background: rgba(255,255,255,.01);">
+    <div class="section-label">Biznes va Mijoz Balansi</div>
+    <h2 class="section-title">Rollar kesimidagi professional interfeys</h2>
+    <p class="section-sub">Tizimga kirishingiz bilan avtomatik ravishda rolingizga moslashtirilgan eksklyuziv ishchi muhitga yo'naltirilasiz.</p>
+
+    <div class="split-grid">
+        <div class="split-panel admin-side">
+            <div class="panel-badge pb-admin"><i class="bi bi-sliders"></i> Admin / Manager muhiti</div>
+            <h3 class="panel-title">Tizim va Biznes Nazorati</h3>
+            <p class="panel-text">Kompaniya rahbarlari va ombor mudirlari uchun to'liq boshqaruv instrumentlari paketi.</p>
+            <ul class="panel-features">
+                <li>
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <div>
+                        <strong>Kirim va Chiqim monitoringi:</strong>
+                        Har bir tovar harakatini BigDecimal moliyaviy aniqligi bilan nazorat qilish.
+                    </div>
+                </li>
+                <li>
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <div>
+                        <strong>Eksport va Analitika:</strong>
+                        Ombor qoldiqlari va savdo jurnallarini filtrlangan Pageable holatda PDF ko'rinishida generatsiya qilish.
+                    </div>
+                </li>
+                <li>
+                    <i class="bi bi-bell-fill"></i>
+                    <div>
+                        <strong>Kritik Qoldiq Ogohlantirishlari:</strong>
+                        Tovarlar tugash arafasiga kelganda tizim avtomatik ogohlantirish beradi.
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="split-panel user-side">
+            <div class="panel-badge pb-user"><i class="bi bi-cart-check"></i> Xaridor (User) muhiti</div>
+            <h3 class="panel-title">Tezkor va Shaffof Savdo Portali</h3>
+            <p class="panel-text">Mijozlaringiz uchun buyurtma berish jarayonini maksimal darajada osonlashtiruvchi platforma.</p>
+            <ul class="panel-features">
+                <li>
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                    <div>
+                        <strong>Raqamli Katalog:</strong>
+                        Kategoriyalar bo'yicha sarolangan toza mahsulotlar ro'yxati va real vaqtdagi narxlar.
+                    </div>
+                </li>
+                <li>
+                    <i class="bi bi-clock-history"></i>
+                    <div>
+                        <strong>Mening Buyurtmalarim:</strong>
+                        Yuborilgan buyurtmalarni (YANGI, JARAYONDA, YAKUNLANGAN, BEKOR QILINGAN) holatlarini jonli kuzatish.
+                    </div>
+                </li>
+                <li>
+                    <i class="bi bi-person-bounding-box"></i>
+                    <div>
+                        <strong>Shaxsiy Kabinet:</strong>
+                        Shaxsiy ma'lumotlar, parollarni xavfsiz o'zgartirish va xaridlar tarixini toza boshqarish.
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>
+
 <section class="section" id="features">
-    <div class="section-label">Nima taklif qilamiz</div>
-    <h2 class="section-title">Barcha kerakli vositalar</h2>
-    <p class="section-sub">Kichik biznesdan tortib yirik omborlargacha mos keladigan to'liq yechim.</p>
+    <div class="section-label">Siz uchun qulayliklar</div>
+    <h2 class="section-title">Nega aynan SmartStore?</h2>
+    <p class="section-sub">Murakkab texnologiyalar orqasida sodda va tushunarli interfeys yashiringan.</p>
 
     <div class="features-grid">
         <div class="feature-card">
-            <div class="feature-icon fi-yellow"><i class="bi bi-box-seam-fill"></i></div>
-            <div class="feature-title">Mahsulot boshqaruvi</div>
-            <div class="feature-text">Mahsulotlarni qo'shish, tahrirlash, o'chirish va kategoriyalash. Rasm yuklash va narx kuzatish imkoniyatlari.</div>
+            <div class="feature-icon fi-green"><i class="bi bi-lightning-charge-fill"></i></div>
+            <div class="feature-title">Chaqmoqdek tezkor xarid</div>
+            <div class="feature-text">Ortiqcha kutishlarsiz, bir nechta klik orqali buyurtma bering. Tizim smartfonlarda ham, kompyuterda ham juda tez ishlaydi.</div>
         </div>
+
         <div class="feature-card">
-            <div class="feature-icon fi-blue"><i class="bi bi-cart3-fill"></i></div>
-            <div class="feature-title">Buyurtmalar tizimi</div>
-            <div class="feature-text">Yangi buyurtmalar qabul qilish, holatlarini kuzatish va hisobot chiqarish. Mijozlarga tez xizmat ko'rsatish.</div>
+            <div class="feature-icon fi-blue"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="feature-title">Xavfsiz va Ishonchli</div>
+            <div class="feature-text">Sizning shaxsiy ma'lumotlaringiz, parollaringiz va xaridlar tariqingiz zamonaviy xalqaro standartlar asosida to'liq himoyalangan.</div>
         </div>
+
         <div class="feature-card">
-            <div class="feature-icon fi-green"><i class="bi bi-tag-fill"></i></div>
-            <div class="feature-title">Kategoriyalar</div>
-            <div class="feature-text">Mahsulotlarni mantiqiy guruhlash, qidirish va filtrlash. Tartibli katalog tuzish imkoniyati.</div>
+            <div class="feature-icon fi-yellow"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="feature-title">Aniq hisob-kitob</div>
+            <div class="feature-text">Biznes egalari uchun bir tiyin ham xatoliksiz avtomatlashtirilgan hisobotlar, tushumlar nazorati va ombor qoldig'i monitoringi.</div>
         </div>
+
         <div class="feature-card">
-            <div class="feature-icon fi-purple"><i class="bi bi-people-fill"></i></div>
-            <div class="feature-title">Foydalanuvchi boshqaruvi</div>
-            <div class="feature-text">Admin, Manager va User rollari. Har bir foydalanuvchiga alohida ruxsatlar berish imkoniyati.</div>
+            <div class="feature-icon fi-purple"><i class="bi bi-clock-history"></i></div>
+            <div class="feature-title">24/7 Shaffof kuzatuv</div>
+            <div class="feature-text">Buyurtmangiz qaysi jarayonda ekanligini (tayyorlanmoqda, yo'lda, yetkazildi) shaxsiy kabinetingizda jonli ravishda kuzatib borasiz.</div>
         </div>
+
         <div class="feature-card">
-            <div class="feature-icon fi-teal"><i class="bi bi-shield-lock-fill"></i></div>
-            <div class="feature-title">Xavfsizlik</div>
-            <div class="feature-text">Spring Security asosidagi autentifikatsiya. Ruxsatlar tizimi va parol shifrlash bilan to'liq himoya.</div>
+            <div class="feature-icon fi-teal" style="font-size: 24px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-phone"></i>
+            </div>
+            <div class="feature-title">Mobil qulaylik</div>
+            <div class="feature-text">Do'koningizga istalgan joydan — telefon, planshet yoki noutbuk orqali kiring. Interfeys har qanday ekranga ideal moslashadi.</div>
         </div>
+
         <div class="feature-card">
-            <div class="feature-icon fi-red"><i class="bi bi-graph-up-arrow"></i></div>
-            <div class="feature-title">Statistika</div>
-            <div class="feature-text">Real vaqt statistikasi, ombor qoldig'i monitoringi va buyurtmalar tahlili bilan biznesingizni nazorat qiling.</div>
+            <div class="feature-icon fi-red" style="font-size: 22px;"><i class="bi bi-filetype-pdf"></i></div>
+            <div class="feature-title">Bir klikda PDF hisobot</div>
+            <div class="feature-text">Barcha savdo va ombor harakatlari jurnallarini filtrlangan va tartiblangan holatda professional PDF hujjat sifatida yuklab oling.</div>
         </div>
     </div>
 </section>
 
-<!-- ROLES -->
-<section class="roles-section" id="roles">
-    <div class="section-label">Ruxsatlar tizimi</div>
-    <h2 class="section-title">Uch xil foydalanuvchi roli</h2>
-    <p class="section-sub" style="margin-bottom:44px;">Har bir hodimga mos rol bering va tizim xavfsizligini ta'minlang.</p>
-
-    <div class="roles-grid">
-        <div class="role-card">
-            <div class="role-avatar ra-yellow"><i class="bi bi-person-gear"></i></div>
-            <div class="role-name">ADMIN</div>
-            <ul class="role-perms">
-                <li><i class="bi bi-check-circle-fill"></i> Barcha ruxsatlar</li>
-                <li><i class="bi bi-check-circle-fill"></i> Foydalanuvchi boshqaruvi</li>
-                <li><i class="bi bi-check-circle-fill"></i> Tizim sozlamalari</li>
-                <li><i class="bi bi-check-circle-fill"></i> Parolni reset qilish</li>
-            </ul>
-        </div>
-        <div class="role-card">
-            <div class="role-avatar ra-blue"><i class="bi bi-person-badge"></i></div>
-            <div class="role-name">MANAGER</div>
-            <ul class="role-perms">
-                <li><i class="bi bi-check-circle-fill"></i> Mahsulot boshqaruvi</li>
-                <li><i class="bi bi-check-circle-fill"></i> Buyurtmalar</li>
-                <li><i class="bi bi-check-circle-fill"></i> Kategoriyalar</li>
-                <li><i class="bi bi-check-circle-fill"></i> Hisobotlar</li>
-            </ul>
-        </div>
-        <div class="role-card">
-            <div class="role-avatar ra-green"><i class="bi bi-person"></i></div>
-            <div class="role-name">USER</div>
-            <ul class="role-perms">
-                <li><i class="bi bi-check-circle-fill"></i> Mahsulotlarni ko'rish</li>
-                <li><i class="bi bi-check-circle-fill"></i> Buyurtma berish</li>
-                <li><i class="bi bi-check-circle-fill"></i> Profil tahrirlash</li>
-                <li><i class="bi bi-check-circle-fill"></i> Parol o'zgartirish</li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-banner">
+<section class="cta-banner" style="background: rgba(0,0,0,.15); border-top: 1px solid var(--border);">
     <div class="cta-box">
-        <h2 class="cta-title">Hoziroq boshlang</h2>
-        <p class="cta-sub">Smart Inventory bilan omboringizni tartibga soling. Ro'yxatdan o'tish bepul va tez!</p>
-        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            <a href="/auth/login" class="btn-hero-primary">
+        <h2 class="cta-title">SmartStore ekotizimiga qo'shiling</h2>
+        <p class="cta-sub">Siz biznes egasisiz yoki xaridorsiz — tizim siz uchun tayyor.</p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;" sec:authorize="isAnonymous()">
+            <a th:href="@{/auth/login}" class="btn-hero-primary">
                 <i class="bi bi-box-arrow-in-right"></i> Tizimga kirish
             </a>
-            <a href="/auth/register" class="btn-hero-ghost">
+            <a th:href="@{/auth/register}" class="btn-hero-ghost">
                 <i class="bi bi-person-plus"></i> Ro'yxatdan o'tish
             </a>
         </div>
+        <div sec:authorize="isAuthenticated()">
+            <span class="badge bg-success p-2 px-3" style="font-size:14px;">Tizimga muvaffaqiyatli kirgansiz!</span>
+        </div>
     </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
     <div style="display:flex; align-items:center; gap:10px;">
-        <div class="logo-icon"><i class="bi bi-box-seam"></i></div>
-        <span style="font-size:14px; font-weight:700; color:#fff;">Smart Inventory</span>
+        <div class="logo-icon"><i class="bi bi-shop"></i></div>
+        <span style="font-size:14px; font-weight:700; color:#fff;">SmartStore</span>
     </div>
-    <p>© 2025 Smart Inventory. Barcha huquqlar himoyalangan.</p>
+    <p>© 2026 SmartStore. Barcha huquqlar himoyalangan.</p>
 </footer>
 
 <script>
@@ -551,14 +556,14 @@
         });
     });
 
-    // Intersection observer for feature cards
-    const cards = document.querySelectorAll('.feature-card, .role-card');
+    // Intersection observer for cards
+    const cards = document.querySelectorAll('.feature-card, .split-panel');
     const obs = new IntersectionObserver(entries => {
         entries.forEach((entry, i) => {
             if (entry.isIntersecting) {
                 entry.target.style.opacity = '0';
                 entry.target.style.transform = 'translateY(20px)';
-                entry.target.style.transition = `opacity .4s ease ${i * .06}s, transform .4s ease ${i * .06}s`;
+                entry.target.style.transition = `opacity .4s ease ${i * .05}s, transform .4s ease ${i * .05}s`;
                 requestAnimationFrame(() => {
                     entry.target.style.opacity = '1';
                     entry.target.style.transform = 'translateY(0)';
