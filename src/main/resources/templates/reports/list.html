@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hisobotlar | Smart Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-w:    260px;
+            --primary:      #f59e0b;
+            --primary-dk:   #d97706;
+            --primary-lt:   #fef3c7;
+            --bg:           #f1f5f9;
+            --surface:      #ffffff;
+            --surface2:     #f8fafc;
+            --border:       #e2e8f0;
+            --text:         #0f172a;
+            --muted:        #64748b;
+            --light:        #94a3b8;
+            --success:      #10b981;
+            --success-lt:   #d1fae5;
+            --danger:       #ef4444;
+            --danger-lt:    #fee2e2;
+            --blue:         #3b82f6;
+            --blue-lt:      #dbeafe;
+            --purple:       #8b5cf6;
+            --purple-lt:    #ede9fe;
+            --radius:       12px;
+            --shadow:       0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .breadcrumb-nav { display:flex;align-items:center;gap:6px;font-size:13.5px; }
+        .breadcrumb-nav a { color:var(--muted);text-decoration:none;font-weight:500;transition:color .15s; }
+        .breadcrumb-nav a:hover { color:var(--text); }
+        .breadcrumb-sep { color:var(--light);font-size:11px; }
+        .breadcrumb-current { color:var(--text);font-weight:600; }
+
+        .topbar-right { display:flex;align-items:center;gap:8px; }
+        .topbar-btn {
+            width:36px;height:36px;border:1px solid var(--border);
+            background:var(--surface);border-radius:8px;
+            display:flex;align-items:center;justify-content:center;
+            color:var(--muted);font-size:15px;transition:all .15s;text-decoration:none;
+        }
+        .topbar-btn:hover { background:var(--bg);color:var(--text); }
+        .notif-dot { position:relative; }
+        .notif-dot::after {
+            content:'';position:absolute;top:7px;right:7px;
+            width:7px;height:7px;background:var(--danger);
+            border-radius:50%;border:1.5px solid #fff;
+        }
+
+        /* ── Page body ── */
+        .page-body {
+            flex:1;
+            padding:32px;
+            animation: fadeUp .3s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(10px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            margin-bottom:28px;
+            flex-wrap:wrap;
+            gap:16px;
+        }
+
+        .page-title   { font-size:22px;font-weight:800;letter-spacing:-.4px; }
+        .page-subtitle { font-size:13.5px;color:var(--muted);margin-top:4px;font-weight:500; }
+
+        /* ── Tab nav ── */
+        .tab-nav {
+            display:flex;
+            gap:6px;
+            background:var(--surface2);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:5px;
+            margin-bottom:24px;
+        }
+
+        .tab-btn {
+            flex:1;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            padding:10px 18px;
+            font-size:13.5px;
+            font-family:inherit;
+            font-weight:600;
+            border:none;
+            border-radius:9px;
+            cursor:pointer;
+            text-decoration:none;
+            color:var(--muted);
+            background:transparent;
+            transition:all .18s;
+        }
+
+        .tab-btn:hover { background:var(--surface);color:var(--text); }
+
+        .tab-btn.active {
+            background:var(--surface);
+            color:var(--primary-dk);
+            box-shadow:var(--shadow);
+        }
+
+        .tab-btn.active i { color:var(--primary); }
+
+        /* ── Date filter card ── */
+        .filter-card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:18px 22px;
+            margin-bottom:20px;
+            display:flex;
+            align-items:center;
+            gap:14px;
+            flex-wrap:wrap;
+            box-shadow:var(--shadow);
+        }
+
+        .filter-label {
+            font-size:12px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+            letter-spacing:.06em;
+            white-space:nowrap;
+        }
+
+        .date-input {
+            padding:9px 13px;
+            font-size:13.5px;
+            font-family:inherit;
+            color:var(--text);
+            background:var(--surface2);
+            border:1.5px solid var(--border);
+            border-radius:9px;
+            outline:none;
+            transition:border-color .15s,box-shadow .15s;
+        }
+
+        .date-input:focus {
+            border-color:var(--primary);
+            box-shadow:0 0 0 3px rgba(245,158,11,.1);
+        }
+
+        .filter-sep { color:var(--light);font-size:13px; }
+
+        .btn-filter {
+            display:inline-flex;align-items:center;gap:7px;
+            padding:9px 18px;
+            font-size:13px;font-family:inherit;font-weight:700;
+            background:var(--primary);color:#fff;border:none;
+            border-radius:9px;cursor:pointer;transition:all .15s;
+            box-shadow:0 1px 4px rgba(245,158,11,.25);
+        }
+        .btn-filter:hover { background:var(--primary-dk);transform:translateY(-1px); }
+
+        .btn-pdf {
+            display:inline-flex;align-items:center;gap:7px;
+            padding:9px 18px;
+            font-size:13px;font-family:inherit;font-weight:700;
+            background:var(--danger-lt);color:#b91c1c;
+            border:1.5px solid #fecaca;border-radius:9px;
+            cursor:pointer;transition:all .15s;text-decoration:none;
+            margin-left:auto;
+        }
+        .btn-pdf:hover { background:#fecaca;color:#991b1b;transform:translateY(-1px); }
+
+        /* ── Stats row ── */
+        .stats-row {
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+            gap:16px;
+            margin-bottom:24px;
+        }
+
+        .stat-card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:18px 20px;
+            display:flex;
+            align-items:center;
+            gap:14px;
+            box-shadow:var(--shadow);
+            transition:all .2s;
+        }
+        .stat-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.08);transform:translateY(-1px); }
+
+        .stat-icon {
+            width:44px;height:44px;border-radius:11px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:19px;flex-shrink:0;
+        }
+        .si-yellow { background:var(--primary-lt);color:var(--primary-dk); }
+        .si-green  { background:var(--success-lt);color:#059669; }
+        .si-blue   { background:var(--blue-lt);color:var(--blue); }
+        .si-red    { background:var(--danger-lt);color:var(--danger); }
+        .si-purple { background:var(--purple-lt);color:var(--purple); }
+
+        .stat-value { font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1; }
+        .stat-label { font-size:12px;color:var(--muted);margin-top:3px;font-weight:500; }
+
+        /* ── Table card ── */
+        .table-card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .table-card-header {
+            padding:16px 20px;
+            border-bottom:1px solid var(--border);
+            background:var(--surface2);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+        }
+
+        .table-card-title {
+            font-size:14px;font-weight:700;color:var(--text);
+            display:flex;align-items:center;gap:9px;
+        }
+
+        .t-icon {
+            width:28px;height:28px;border-radius:8px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:13px;flex-shrink:0;
+        }
+
+        .data-table { width:100%;border-collapse:collapse; }
+
+        .data-table thead th {
+            background:var(--surface2);
+            color:var(--light);
+            font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+            padding:12px 18px;border-bottom:1px solid var(--border);white-space:nowrap;
+        }
+
+        .data-table tbody tr { border-bottom:1px solid var(--border);transition:background .12s; }
+        .data-table tbody tr:last-child { border-bottom:none; }
+        .data-table tbody tr:hover { background:#fafbfc; }
+        .data-table tbody td { padding:13px 18px;font-size:13.5px;color:var(--text);vertical-align:middle; }
+
+        /* badges */
+        .badge-status {
+            display:inline-flex;align-items:center;gap:5px;
+            padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;
+        }
+        .bs-new       { background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe; }
+        .bs-completed { background:var(--success-lt);color:#065f46;border:1px solid #a7f3d0; }
+        .bs-canceled  { background:var(--danger-lt);color:#b91c1c;border:1px solid #fecaca; }
+        .badge-status.bs-processing {
+            background-color: #fef3c7; /* Och sariq fon */
+            color: #b45309;            /* Matn uchun to'qroq jigar rang/sariq */
+            padding: 6px 16px;         /* Rasmdagidek ichki kenglik */
+            border-radius: 50px;       /* Chetlarini to'liq yumaloq qilish */
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-block;
+            text-align: center;
+            text-transform: uppercase; /* Harflarni katta qilish (ixtiyoriy) */
+        }
+
+        .qty-badge {
+            display:inline-flex;align-items:center;gap:4px;
+            padding:4px 10px;border-radius:8px;font-size:12.5px;font-weight:700;
+        }
+        .qty-ok  { background:var(--success-lt);color:#059669;border:1px solid #a7f3d0; }
+        .qty-low { background:#fff7ed;color:#c2410c;border:1px solid #fed7aa; }
+        .qty-out { background:var(--danger-lt);color:#b91c1c;border:1px solid #fecaca; }
+
+        .price-text { font-weight:700;color:var(--success); }
+
+        /* row number */
+        .row-num { font-size:12px;color:var(--light);font-weight:600;text-align:center; }
+
+        /* empty state */
+        .empty-state { padding:64px 24px;text-align:center; }
+        .empty-icon {
+            width:64px;height:64px;background:var(--bg);border:1px solid var(--border);
+            border-radius:16px;display:flex;align-items:center;justify-content:center;
+            font-size:26px;color:var(--light);margin:0 auto 16px;
+        }
+        .empty-title { font-size:15px;font-weight:700;margin-bottom:5px; }
+        .empty-text  { font-size:13.5px;color:var(--muted); }
+
+        /* table footer */
+        .table-footer {
+            padding:12px 20px;border-top:1px solid var(--border);
+            background:var(--surface2);
+            display:flex;align-items:center;justify-content:space-between;
+            font-size:12.5px;color:var(--muted);
+        }
+        .table-footer strong { color:var(--text);font-weight:700; }
+
+        /* info note */
+        .info-note {
+            display:flex;align-items:flex-start;gap:10px;
+            background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;
+            padding:12px 14px;margin-bottom:20px;
+            font-size:13px;color:#0369a1;line-height:1.5;
+        }
+        .info-note i { color:#0ea5e9;font-size:15px;flex-shrink:0;margin-top:1px; }
+
+        @media (max-width:768px) {
+            .main-content { margin-left:0; }
+            .page-body { padding:20px; }
+            .tab-btn span { display:none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div th:replace="~{fragments/sidebar :: sidebar(activePage='reports')}"></div>
+
+<div class="main-content">
+
+    <header class="topbar">
+        <nav class="breadcrumb-nav">
+            <a th:href="@{/dashboard}">Dashboard</a>
+            <span class="breadcrumb-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="breadcrumb-current">Hisobotlar</span>
+        </nav>
+        <div class="topbar-right">
+            <a href="#" class="topbar-btn notif-dot"><i class="bi bi-bell"></i></a>
+            <a href="#" class="topbar-btn"><i class="bi bi-question-circle"></i></a>
+        </div>
+    </header>
+
+    <main class="page-body">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Hisobotlar</h1>
+                <p class="page-subtitle">Savdo, ombor va harakatlar statistikasi</p>
+            </div>
+        </div>
+
+        <div class="tab-nav">
+            <a th:href="@{/reports(type='sales', from=${from}, to=${to})}"
+               class="tab-btn"
+               th:classappend="${type == 'sales'} ? ' active' : ''">
+                <i class="bi bi-bar-chart-fill"></i>
+                <span>Savdo hisoboti</span>
+            </a>
+            <a th:href="@{/reports(type='warehouse', from=${from}, to=${to})}"
+               class="tab-btn"
+               th:classappend="${type == 'warehouse'} ? ' active' : ''">
+                <i class="bi bi-box-seam-fill"></i>
+                <span>Ombor hisoboti</span>
+            </a>
+            <a th:href="@{/reports(type='movements', from=${from}, to=${to})}"
+               class="tab-btn"
+               th:classappend="${type == 'movements'} ? ' active' : ''">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Harakatlar hisoboti</span>
+            </a>
+        </div>
+
+        <form th:action="@{/reports}" method="get" class="filter-card">
+            <input type="hidden" name="type" th:value="${type}">
+            <span class="filter-label">Sana oralig'i:</span>
+            <input type="date" name="from" class="date-input"
+                   th:value="${from}">
+            <span class="filter-sep">—</span>
+            <input type="date" name="to" class="date-input"
+                   th:value="${to}">
+            <button type="submit" class="btn-filter">
+                <i class="bi bi-funnel-fill"></i> Ko'rsatish
+            </button>
+            <a th:href="@{/reports/pdf(type=${type}, from=${from}, to=${to})}"
+               class="btn-pdf">
+                <i class="bi bi-file-earmark-pdf-fill"></i> PDF yuklab olish
+            </a>
+        </form>
+
+        <div th:if="${type == 'sales'}">
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon si-yellow"><i class="bi bi-bag-check-fill"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${totalOrders ?: 0}">0</div>
+                        <div class="stat-label">Jami buyurtmalar</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-green"><i class="bi bi-currency-dollar"></i></div>
+                    <div>
+                        <div class="stat-value">
+                            <span th:text="${#numbers.formatDecimal(totalRevenue ?: 0, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            so'm
+                        </div>
+                        <div class="stat-label">Umumiy tushum</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-blue"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${users != null ? users.size() : 0}">0</div>
+                        <div class="stat-label">Foydalanuvchilar</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-card-header">
+                    <div class="table-card-title">
+                        <div class="t-icon" style="background:var(--primary-lt);color:var(--primary-dk);">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        Buyurtmalar ro'yxati
+                    </div>
+                    <span style="font-size:12.5px;color:var(--muted);"
+                          th:text="${from} + ' — ' + ${to}"></span>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th style="width:50px;text-align:center;">№</th>
+                            <th>Check №</th>
+                            <th>Mijoz</th>
+                            <th>Summa</th>
+                            <th>Holat</th>
+                            <th>Sana</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="order, iter : ${orders}">
+                            <td class="row-num" th:text="${iter.count}">1</td>
+                            <td>
+                                    <span style="font-family:monospace;font-weight:600;color:var(--blue);"
+                                          th:text="'#ORD-' + ${#strings.substring(order.id.toString(), 0, 6).toUpperCase()}">
+                                        #ORD-123
+                                    </span>
+                            </td>
+                            <td style="font-weight:600;" th:text="${order.userFullName}">Mijoz</td>
+                            <td>
+                                <span class="price-text"
+                                      th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                <span> so'm</span>
+                            </td>
+                            <td>
+                                    <span th:switch="${order.status.name()}">
+                                        <span th:case="'NEW'"       class="badge-status bs-new">YANGI</span>
+                                        <span th:case="'PROCESSING'" class="badge-status bs-processing">JARAYONDA</span>
+                                        <span th:case="'COMPLETED'" class="badge-status bs-completed">YAKUNLANGAN</span>
+                                        <span th:case="'CANCELLED'"  class="badge-status bs-canceled">BEKOR QILINGAN</span>
+                                    </span>
+                            </td>
+                            <td style="color:var(--muted);font-size:13px;"
+                                th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">
+                                01.01.2025 12:00
+                            </td>
+                        </tr>
+                        <tr th:if="${orders == null or #lists.isEmpty(orders)}">
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-icon"><i class="bi bi-cart-x"></i></div>
+                                    <div class="empty-title">Buyurtmalar topilmadi</div>
+                                    <div class="empty-text">Tanlangan sana oralig'ida hech qanday buyurtma yo'q.</div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer" th:unless="${orders == null or #lists.isEmpty(orders)}">
+                    <span>Jami <strong th:text="${orders.size()}">0</strong> ta buyurtma</span>
+                    <span>Umumiy:
+                        <strong class="price-text"
+                                th:text="${#numbers.formatDecimal(#aggregates.sum(orders.![totalAmount]), 1, 'COMMA', 0, 'POINT')} + ' so\'m'">
+                        </strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${type == 'warehouse'}">
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon si-blue"><i class="bi bi-box-seam-fill"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${products != null ? products.size() : 0}">0</div>
+                        <div class="stat-label">Jami mahsulotlar</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-green"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <div class="stat-value"
+                             th:text="${products != null ? products.?[quantity > 5].size() : 0}">0</div>
+                        <div class="stat-label">Yetarli omborda</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${lowStockCount ?: 0}">0</div>
+                        <div class="stat-label">Kam qolgan (≤5)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-purple"><i class="bi bi-x-circle-fill"></i></div>
+                    <div>
+                        <div class="stat-value"
+                             th:text="${products != null ? products.?[quantity == 0].size() : 0}">0</div>
+                        <div class="stat-label">Tugagan tovarlar</div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${lowStockCount > 0}" class="info-note">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span>
+                    <strong th:text="${lowStockCount}">0</strong> ta mahsulot omborda kritik darajada kam qolgan.
+                    Ularni zudlik bilan to'ldirish tavsiya etiladi.
+                </span>
+            </div>
+
+            <div class="table-card">
+                <div class="table-card-header">
+                    <div class="table-card-title">
+                        <div class="t-icon" style="background:var(--blue-lt);color:var(--blue);">
+                            <i class="bi bi-boxes"></i>
+                        </div>
+                        Mahsulotlar ombori
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th style="width:50px;text-align:center;">№</th>
+                            <th>Mahsulot nomi</th>
+                            <th>Kategoriya</th>
+                            <th>Narxi</th>
+                            <th>Miqdori</th>
+                            <th>Holat</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="prod, iter : ${products}">
+                            <td class="row-num" th:text="${iter.count}">1</td>
+                            <td style="font-weight:600;" th:text="${prod.name}">Mahsulot</td>
+                            <td>
+                                    <span style="padding:4px 10px;background:var(--surface2);color:var(--muted);border-radius:6px;font-size:12.5px;font-weight:600;"
+                                          th:text="${prod.categoryName ?: 'Kategoriyasiz'}">Kategoriya</span>
+                            </td>
+                            <td>
+                                    <span class="price-text"
+                                          th:text="|${#numbers.formatDecimal(prod.price ?: 0, 1, 'WHITESPACE', 0, 'POINT')} so'm|">
+                                    </span>
+                            </td>
+                            <td style="font-weight:700;" th:text="|${prod.quantity ?: 0} ta|">0 ta</td>
+                            <td>
+                                    <span th:classappend="${prod.quantity == 0 ? 'qty-out' : prod.quantity <= 5 ? 'qty-low' : 'qty-ok'}"
+                                          class="qty-badge">
+                                        <i th:class="${prod.quantity == 0 ? 'bi bi-x-circle-fill' : prod.quantity <= 5 ? 'bi bi-exclamation-circle-fill' : 'bi bi-check-circle-fill'}"
+                                           style="font-size:.7rem;"></i>
+                                        <span th:text="${prod.quantity == 0 ? 'Tugagan' : prod.quantity <= 5 ? 'Kam qoldi' : 'Yetarli'}"></span>
+                                    </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${products == null or #lists.isEmpty(products)}">
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-icon"><i class="bi bi-box"></i></div>
+                                    <div class="empty-title">Mahsulotlar topilmadi</div>
+                                    <div class="empty-text">Omborxonada hech qanday mahsulot yo'q.</div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer" th:unless="${products == null or #lists.isEmpty(products)}">
+                    <span>Jami <strong th:text="${products.size()}">0</strong> ta mahsulot</span>
+                    <span>Kritik: <strong style="color:var(--danger);" th:text="${lowStockCount ?: 0}">0</strong> ta</span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${type == 'movements'}">
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon si-blue"><i class="bi bi-arrow-left-right"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${movementPage != null ? movementPage.totalElements : 0}">0</div>
+                        <div class="stat-label">Davriy amaliyotlar</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon si-green"><i class="bi bi-box-arrow-in-right"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${kirimCount ?: 0}">0</div>
+                        <div class="stat-label">Kirim amallari</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon si-red"><i class="bi bi-box-arrow-left"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${chiqimCount ?: 0}">0</div>
+                        <div class="stat-label">Chiqim amallari</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon si-purple"><i class="bi bi-cash-stack"></i></div>
+                    <div>
+                        <div class="stat-value">
+                            <span th:text="${totalKirimSum != null ? #numbers.formatDecimal(totalKirimSum, 1, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                            <small style="font-size:12px;">so'm</small>
+                        </div>
+                        <div class="stat-label">Jami Kirim Qiymati</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-card-header">
+                    <div class="table-card-title">
+                        <div class="t-icon" style="background:var(--primary-lt);color:var(--primary-dk);">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                        Ombor harakatlari jurnali
+                    </div>
+                    <span style="font-size:12.5px;color:var(--muted);"
+                          th:text="${from} + ' — ' + ${to}"></span>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th style="width:50px;text-align:center;">№</th>
+                            <th>Harakat turi</th>
+                            <th>Mahsulot</th>
+                            <th style="text-align:center;">Miqdori</th>
+                            <th>Harakatdagi narxi</th>
+                            <th>Sabab / Hujjat</th>
+                            <th>Sana / Vaqt</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="m, iter : ${movements}">
+                            <td class="row-num" th:text="${(movementPage.number * movementPage.size) + iter.count}">1</td>
+                            <td>
+                                <span th:if="${m.type == 'IN'}" class="badge-status bs-completed" style="background:#d1fae5; color:#065f46;">KIRIM</span>
+                                <span th:if="${m.type == 'OUT'}" class="badge-status bs-canceled" style="background:#fee2e2; color:#b91c1c;">CHIQIM</span>
+                            </td>
+                            <td style="font-weight:600;" th:text="${m.productName}">Mahsulot nomi</td>
+                            <td th:text="${m.quantity + ' ta'}" style="text-align:center; font-weight:700;">0 ta</td>
+                            <td>
+                                <span th:if="${m.priceAtMovement != null}">
+                                    <span class="price-text" th:style="${m.type == 'IN'} ? 'color:#059669;' : 'color:#dc2626;'"
+                                          th:text="${#numbers.formatDecimal(m.priceAtMovement, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                    <span> so'm</span>
+                                </span>
+                                <span th:unless="${m.priceAtMovement != null}" style="color:var(--muted);">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${m.reason != null}" th:text="${m.reason}">—</span>
+
+                                <div th:if="${m.orderId != null}" style="margin-top:2px;">
+                                    <span style="font-family:monospace;font-weight:600;color:var(--blue); font-size:12px;"
+                                          th:text="'#ORD-' + ${#strings.substring(m.orderId.toString(), 0, 6).toUpperCase()}">
+                                    </span>
+                                    <span th:if="${m.orderStatus == 'CANCELLED'}"
+                                          class="badge-status bs-canceled"
+                                          style="font-size:11px; padding:1px 6px; margin-left:5px;">Bekor qilingan</span>
+                                </div>
+                            </td>
+                            <td style="color:var(--muted);font-size:13px;"
+                                th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                            </td>
+                        </tr>
+
+                        <tr th:if="${movements == null or #lists.isEmpty(movements)}">
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <div class="empty-icon"><i class="bi bi-activity"></i></div>
+                                    <div class="empty-title">Harakatlar topilmadi</div>
+                                    <div class="empty-text">Tanlangan sana oralig'ida omborga oid hech qanday amaliyot topilmadi.</div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer" th:unless="${movements == null or #lists.isEmpty(movements)}">
+                    <span>Sahifadagi amaliyotlar soni: <strong th:text="${movements.size()}">0</strong> ta</span>
+                    <span>Jami filtr bo'yicha: <strong th:text="${movementPage.totalElements}">0</strong> ta</span>
+                </div>
+            </div>
+
+            <div th:if="${movementPage != null and movementPage.totalPages > 1}"
+                 style="display:flex; justify-content:center; margin-top:20px; gap:5px;">
+
+                <a th:href="@{/reports(type='movements', from=${from}, to=${to}, page=${movementPage.number - 1})}"
+                   th:if="${movementPage.hasPrevious()}"
+                   style="padding: 8px 14px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; color: var(--muted); text-decoration: none;">
+                    <i class="bi bi-chevron-left"></i> Oldingi
+                </a>
+
+                <th:block th:each="i : ${#numbers.sequence(0, movementPage.totalPages - 1)}">
+                    <a th:href="@{/reports(type='movements', from=${from}, to=${to}, page=${i})}"
+                       th:text="${i + 1}"
+                       th:style="${i == movementPage.number}
+                                ? 'padding: 8px 14px; background: #0f172a; color: white; border-radius: 6px; text-decoration: none; font-weight: bold;'
+                                : 'padding: 8px 14px; background: white; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; text-decoration: none;'}">
+                    </a>
+                </th:block>
+
+                <a th:href="@{/reports(type='movements', from=${from}, to=${to}, page=${movementPage.number + 1})}"
+                   th:if="${movementPage.hasNext()}"
+                   style="padding: 8px 14px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; color: var(--muted); text-decoration: none;">
+                    Keyingi <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

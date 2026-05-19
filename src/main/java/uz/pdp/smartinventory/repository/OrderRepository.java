@@ -31,6 +31,13 @@ public interface OrderRepository extends BaseRepository<Orders, UUID> {
     @Query("SELECT SUM(o.totalAmount) FROM Orders o WHERE o.deleted = false and o.status = :status")
     BigDecimal getTotalRevenueByStatus(@Param("status") OrderStatus status);
 
+    @Query("select sum(o.totalAmount) from Orders o where o.status = :status and o.createdAt >= :from and o.createdAt <= :to and o.deleted = false")
+    BigDecimal sumRevenueByPeriod(
+            @Param("status") OrderStatus status,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
+
     long countByStatusAndDeletedFalse(OrderStatus orderStatus);
 
     long countByStatusInAndDeletedFalse(List<OrderStatus> statuses);

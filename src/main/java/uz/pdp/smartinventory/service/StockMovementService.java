@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import uz.pdp.smartinventory.model.domain.Orders;
 import uz.pdp.smartinventory.model.dto.StockMovementDto;
+import uz.pdp.smartinventory.model.dto.StockMovementReportDto;
 import uz.pdp.smartinventory.model.enums.MovementType;
 
 import java.math.BigDecimal;
@@ -16,4 +17,5 @@ public interface StockMovementService {
 
     Page<StockMovementDto> getFilteredMovements(MovementType type, String product, LocalDate from, LocalDate to, Pageable pageable);
 
+    StockMovementReportDto getMovementReport(LocalDate from, LocalDate to, Pageable pageable);
 }

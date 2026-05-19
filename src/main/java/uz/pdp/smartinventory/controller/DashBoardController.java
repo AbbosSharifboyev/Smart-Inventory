@@ -1,6 +1,7 @@
 package uz.pdp.smartinventory.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/dashboard")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class DashBoardController {
 
     private final OrderServiceImpl orderService;
@@ -26,6 +28,7 @@ public class DashBoardController {
     private final ActionLogService actionLogService;
 
     @GetMapping()
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String index(Model model){
 
         List<ActionLog> activities = actionLogService.getRecentActivities();

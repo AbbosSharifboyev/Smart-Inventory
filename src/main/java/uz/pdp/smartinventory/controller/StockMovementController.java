@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,14 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class StockMovementController {
 
     private final StockMovementService stockMovementService;
     private final ProductService productService;
 
     @GetMapping()
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String listMovements(
             Model model,
             @RequestParam(required = false) MovementType type,
@@ -52,6 +55,7 @@ public class StockMovementController {
 
     //  Omborga qo`lda mahsulot kiritish
     @PostMapping("/in")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String manualStockIn(@ModelAttribute @Valid StockMovementCreateDto dto,
                                 RedirectAttributes redirectAttributes){
         try {

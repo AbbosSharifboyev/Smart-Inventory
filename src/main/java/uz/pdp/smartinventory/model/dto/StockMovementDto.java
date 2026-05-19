@@ -23,4 +23,6 @@ public class StockMovementDto extends BaseDto{
     private String reason;
 
     private UUID orderId;
+
+    private String orderStatus;
 }

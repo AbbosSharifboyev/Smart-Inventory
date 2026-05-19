@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        /* ── Base ── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            background: #ffffff;
+            padding: 0;
+        }
+
+        /* ── Page layout ── */
+        .page {
+            padding: 32px 36px;
+            min-height: 100%;
+        }
+
+        /* ── Header (PDF uchun to'g'rilangan variant) ── */
+        .report-header {
+            width: 100%;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #f59e0b; /* Sariq chiziq endi mutloq pastda turadi */
+            margin-bottom: 30px;
+        }
+
+        .brand {
+            float: left;
+            width: 50%;
+        }
+        .brand-logo-box {
+            float: left;
+            margin-right: 12px;
+        }
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            background-color: #f59e0b;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 45px;
+            border-radius: 10px;
+        }
+        .brand-text-box {
+            float: left;
+            padding-top: 2px;
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .brand-sub {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* O'ng tarafdagi meta ma'lumotlar */
+        .report-meta {
+            float: right;
+            text-align: right;
+            width: 45%;
+            padding-top: 2px;
+        }
+        .report-type { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .report-date { font-size: 10px; color: #64748b; margin-top: 3px; }
+        .report-range { font-size: 10px; color: #64748b; }
+
+        /* ── Summary cards (Kafolatlangan Table-cell usuli) ── */
+        .summary-row {
+            width: 100%;
+            margin-bottom: 24px;
+            display: table;
+            table-layout: fixed;
+        }
+
+        .summary-card {
+            display: table-cell;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            background: #f8fafc;
+        }
+
+        .summary-spacer {
+            width: 14px;
+            display: table-cell;
+        }
+
+        .summary-card-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .summary-card-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -.5px;
+        }
+
+        .summary-card-value.green { color: #059669; }
+        .summary-card-value.blue  { color: #2563eb; }
+
+        .summary-card-sub {
+            font-size: 9px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -.2px;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid #f59e0b;
+        }
+
+        /* ── Table ── */
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 28px;
+        }
+
+        .report-table thead tr {
+            background: #0f172a;
+        }
+
+        .report-table thead th {
+            padding: 9px 12px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: #94a3b8;
+            text-align: left;
+            border: none;
+        }
+
+        .report-table thead th.right { text-align: right; }
+        .report-table thead th.center { text-align: center; }
+
+        .report-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .report-table tbody tr:nth-child(odd)  { background: #ffffff; }
+
+        .report-table tbody td {
+            padding: 8px 12px;
+            font-size: 10.5px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .report-table tbody td.right  { text-align: right; font-weight: 700; }
+        .report-table tbody td.center { text-align: center; }
+        .report-table tbody td.mono   { font-family: monospace; font-weight: 700; color: #2563eb; }
+        .report-table tbody td.price  { color: #059669; font-weight: 800; }
+        .report-table tbody td.num    { color: #94a3b8; font-weight: 600; }
+
+        /* status badges */
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        /* Klasik status klasslari (HTML dagi xatolik to'g'rilandi) */
+        .bs-new       { background: #e0e7ff; color: #4338ca; }
+        .bs-processing { background: #fef3c7; color: #d97706; }
+        .bs-completed { background: #d1fae5; color: #065f46; }
+        .bs-canceled  { background: #fee2e2; color: #b91c1c; }
+
+        /* ── Total footer row ── */
+        .total-row td {
+            padding: 10px 12px;
+            font-weight: 800;
+            font-size: 11px;
+            background: #fef3c7 !important;
+            border-top: 2px solid #f59e0b;
+            border-bottom: none !important;
+        }
+
+        .total-row td.price { color: #b45309; font-size: 13px; }
+
+        /* ── Footer ── */
+        .report-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 14px;
+            width: 100%;
+        }
+
+        .footer-note { float: left; font-size: 9px; color: #94a3b8; }
+        .footer-sys  { float: right; font-size: 9px; color: #cbd5e1; }
+
+        .watermark {
+            position: fixed;
+            bottom: 60px;
+            right: 36px;
+            font-size: 72px;
+            font-weight: 900;
+            color: #f59e0b;
+            opacity: 0.04;
+            letter-spacing: -4px;
+            transform: rotate(-25deg);
+            pointer-events: none;
+        }
+
+        .clearfix { clear: both; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="watermark">SMART STORE</div>
+
+    <div class="report-header">
+        <div class="brand">
+            <div class="brand-logo-box">
+                <div class="brand-icon">S</div>
+            </div>
+            <div class="brand-text-box">
+                <div class="brand-name">Smart Store</div>
+                <div class="brand-sub">Management System</div>
+            </div>
+        </div>
+        <div class="report-meta">
+            <div class="report-type">Savdo Hisoboti</div>
+            <div class="report-date">Yuklab olindi: <span th:text="${reportDate}">01.01.2025 12:00</span></div>
+            <div class="report-range">
+                Davr: <span th:text="${from}">01.01.2025</span> — <span th:text="${to}">31.01.2025</span>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-card-label">Jami buyurtmalar</div>
+            <div class="summary-card-value" th:text="${totalOrders ?: 0}">0</div>
+            <div class="summary-card-sub">Barcha statuslar bilan</div>
+        </div>
+
+        <div class="summary-spacer"></div>
+
+        <div class="summary-card">
+            <div class="summary-card-label">Umumiy tushum</div>
+            <div class="summary-card-value green">
+                <span th:text="${#numbers.formatDecimal(totalRevenue ?: 0, 1, 'WHITESPACE', 0, 'POINT')}">0</span> so'm
+            </div>
+            <div class="summary-card-sub">Yakunlangan buyurtmalar asosida</div>
+        </div>
+
+        <div class="summary-spacer"></div>
+
+        <div class="summary-card">
+            <div class="summary-card-label">Foydalanuvchilar</div>
+            <div class="summary-card-value blue" th:text="${users != null ? #lists.size(users) : 0}">0</div>
+            <div class="summary-card-sub">Tizimda ro'yxatdan o'tgan</div>
+        </div>
+    </div>
+
+    <div class="section-title">Buyurtmalar ro'yxati</div>
+    <table class="report-table">
+        <thead>
+        <tr>
+            <th class="center" style="width:36px;">№</th>
+            <th>Check №</th>
+            <th>Mijoz</th>
+            <th class="right">Summa</th>
+            <th>Holat</th>
+            <th>Sana</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order, iter : ${orders}">
+            <td class="center num" th:text="${iter.count}">1</td>
+            <td class="mono" th:text="'#ORD-' + ${#strings.substring(order.id.toString(), 0, 6).toUpperCase()}">#ORD-ABC</td>
+            <td th:text="${order.userFullName}">Mijoz</td>
+            <td class="right price">
+                <span th:text="${#numbers.formatDecimal(order.totalAmount ?: 0, 1, 'WHITESPACE', 0, 'POINT')}">0</span> so'm
+            </td>
+            <td>
+                <span th:switch="${order.status.name()}">
+                    <span th:case="'NEW'"       class="status bs-new">YANGI</span>
+                    <span th:case="'PROCESSING'" class="status bs-processing">JARAYONDA</span>
+                    <span th:case="'COMPLETED'" class="status bs-completed">YAKUNLANGAN</span>
+                    <span th:case="'CANCELLED'"  class="status bs-canceled">BEKOR QILINGAN</span>
+                </span>
+            </td>
+            <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2025</td>
+        </tr>
+        <tr class="total-row" th:if="${orders != null and !#lists.isEmpty(orders)}">
+            <td colspan="3" style="color:#92400e;">JAMI:</td>
+            <td class="right price">
+                <span th:text="${#numbers.formatDecimal(totalRevenue ?: 0, 1, 'WHITESPACE', 0, 'POINT')}">0</span> so'm
+            </td>
+            <td colspan="2"></td>
+        </tr>
+        <tr th:if="${orders == null or #lists.isEmpty(orders)}">
+            <td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">
+                Tanlangan sana oralig'ida buyurtmalar topilmadi.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="section-title">Foydalanuvchilar</div>
+    <table class="report-table">
+        <thead>
+        <tr>
+            <th class="center" style="width:36px;">№</th>
+            <th>Username</th>
+            <th>To'liq ism</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th class="center">Holat</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user, iter : ${users}">
+            <td class="center num" th:text="${iter.count}">1</td>
+            <td style="font-weight:700;" th:text="${user.username}">username</td>
+            <td th:text="${user.fullName ?: '—'}">Ism</td>
+            <td th:text="${user.email}">email</td>
+            <td>
+                    <span class="status"
+                          th:style="${user.role?.name() == 'ADMIN'} ? 'background:#fef3c7;color:#92400e;' : (${user.role?.name() == 'MANAGER'} ? 'background:#dbeafe;color:#1e40af;' : 'background:#d1fae5;color:#065f46;')"
+                          th:text="${user.role}">ROLE</span>
+            </td>
+            <td class="center">
+                    <span class="status"
+                          th:classappend="${user.enabled} ? ' status-completed' : ' status-canceled'"
+                          th:text="${user.enabled ? 'Faol' : 'Bloklangan'}">
+                    </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="report-footer">
+        <div class="footer-note">Bu hujjat Smart Store tizimi tomonidan avtomatik yaratilgan.</div>
+        <div class="footer-sys">Smart Store v2.0 | <span th:text="${reportDate}"></span></div>
+        <div class="clearfix"></div>
+    </div>
+
+</div>
+</body>
+</html>

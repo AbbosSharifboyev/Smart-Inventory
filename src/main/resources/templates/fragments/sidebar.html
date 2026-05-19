@@ -172,7 +172,7 @@
 
 
     <aside class="sidebar d-none d-lg-flex flex-column"
-            sec:authorize="hasAnyRole('ADMIN','MANAGER')">
+           sec:authorize="hasAnyRole('ADMIN','MANAGER')">
 
         <div class="sidebar-logo">
             <div class="sidebar-logo-icon"><i class="bi bi-box-seam"></i></div>
@@ -216,11 +216,15 @@
                    th:classappend="${activePage == 'transactions'} ? ' active' : ''">
                     <i class="bi bi-arrow-left-right"></i> Kirim / Chiqim
                 </a>
-                <a class="nav-link" href="#"
-                   th:classappend="${activePage == 'suppliers'} ? ' active' : ''">
+
+                <a class="nav-link" href="javascript:void(0)"
+                   style="opacity: 0.5; cursor: not-allowed;"
+                   onclick="showSoonToast()">
                     <i class="bi bi-people"></i> Yetkazib beruvchilar
+                    <span class="badge bg-warning text-dark ms-auto" style="font-size: 9px; padding: 2px 5px;">Yaqinda</span>
                 </a>
-                <a class="nav-link" href="#"
+
+                <a class="nav-link" th:href="@{/reports}"
                    th:classappend="${activePage == 'reports'} ? ' active' : ''">
                     <i class="bi bi-graph-up"></i> Hisobotlar
                 </a>
@@ -238,7 +242,7 @@
                 </a>
 
                 <a class="nav-link" th:href="@{/users/profile}"
-                   th:classappend="${activePage == 'settings'} ? ' active' : ''">
+                   th:classappend="${activePage == 'settings' or activePage == 'profile'} ? ' active' : ''">
                     <i class="bi bi-gear"></i> Sozlamalar
                 </a>
             </div>
@@ -273,6 +277,32 @@
         </div>
 
     </aside>
+
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="soonToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 8px;">
+            <div class="d-flex">
+                <div class="toast-body" style="font-size: 12.5px;">
+                    <i class="bi bi-info-circle-fill text-warning me-2"></i>
+                    <strong>Yetkazib beruvchilar</strong> bo'limi tez orada ishga tushadi!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSoonToast() {
+            var toastEl = document.getElementById('soonToast');
+            // Agar sahifada bootstrap yuklangan bo'lsa, uni ishga tushiradi
+            if (typeof bootstrap !== 'undefined') {
+                var toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+                toast.show();
+            } else {
+                // Agar mabodo Bootstrap JS yuklanmay qolsa, oddiy alert chiqaradi
+                alert("Yetkazib beruvchilar bo'limi tez orada ishga tushadi!");
+            }
+        }
+    </script>
 
 </div>
 </html>

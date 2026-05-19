@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/warehouse")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class WarehouseController {
 
     private static final int LOW_STOCK_THRESHOLD = 6;
@@ -27,6 +29,7 @@ public class WarehouseController {
     private final ProductRepository productRepository;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String index(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false)   String search,

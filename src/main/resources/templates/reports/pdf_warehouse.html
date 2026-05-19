@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            background: #ffffff;
+        }
+
+        .page { padding: 32px 36px; }
+
+        /* PDF moslashtirilgan Header (Flex o'rniga Float) */
+        .report-header {
+            width: 100%;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #3b82f6;
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            float: left;
+            width: 50%;
+        }
+
+        .brand-logo-box {
+            float: left;
+            margin-right: 12px;
+        }
+
+        .brand-icon {
+            width:40px;height:40px;background:#3b82f6;border-radius:10px;
+            text-align: center; line-height: 40px;
+            color:#fff;font-size:20px;font-weight:900;
+        }
+
+        .brand-text-box {
+            float: left;
+            padding-top: 2px;
+        }
+
+        .brand-name { font-size:18px;font-weight:900;color:#0f172a; line-height: 1.1; }
+        .brand-sub  { font-size:10px;color:#64748b;margin-top:2px; }
+
+        .report-meta {
+            float: right;
+            text-align: right;
+            width: 45%;
+        }
+        .report-type { font-size:16px;font-weight:800;color:#0f172a; }
+        .report-date { font-size:10px;color:#64748b;margin-top:3px; }
+
+        /* Summary Cards (Flexbox almashtirildi) */
+        .summary-row {
+            width: 100%;
+            margin-bottom: 24px;
+            display: table;        /* PDF generator uchun eng xavfsiz va xatosiz usul */
+            table-layout: fixed;   /* Kartalar kengligi teng taqsimlanishi uchun */
+        }
+
+        /* Har bir karta jadval katagi (cell) kabi yonma-yon turadi */
+        .summary-card {
+            display: table-cell;   /* Pastga tushib ketish ehtimoli 0% */
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 10px;
+            background: #f8fafc;
+        }
+
+        /* Kartalar o'rtasida masofa hosil qilish uchun */
+        .summary-spacer {
+            width: 12px;           /* Kartalar orasidagi aniq masofa */
+            display: table-cell;
+        }
+
+        .summary-card-label {
+            font-size:9px;font-weight:700;text-transform:uppercase;
+            letter-spacing:.07em;color:#94a3b8;margin-bottom:6px;
+        }
+        .summary-card-value { font-size:20px;font-weight:900;color:#0f172a; }
+        .summary-card-value.green { color:#059669; }
+        .summary-card-value.red   { color:#dc2626; }
+        .summary-card-value.blue  { color:#2563eb; }
+        .summary-card-sub { font-size:9px;color:#64748b;margin-top:3px; }
+
+        /* Section title */
+        .section-title {
+            font-size:12px;font-weight:800;color:#0f172a;
+            margin-bottom:10px;padding-left:10px;
+            border-left:3px solid #3b82f6;
+        }
+
+        /* Alert box */
+        .alert-box {
+            background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;
+            padding:10px 14px;margin-bottom:20px;
+            font-size:10.5px;color:#c2410c;font-weight:600;
+        }
+
+        /* Table */
+        .report-table { width:100%;border-collapse:collapse;margin-bottom:28px; }
+        .report-table thead tr { background:#0f172a; }
+        .report-table thead th {
+            padding:9px 12px;font-size:9px;font-weight:700;
+            text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;
+            text-align:left;border:none;
+        }
+        .report-table thead th.right { text-align:right; }
+        .report-table thead th.center { text-align:center; }
+        .report-table tbody tr:nth-child(even) { background:#f8fafc; }
+        .report-table tbody tr:nth-child(odd)  { background:#ffffff; }
+        .report-table tbody td {
+            padding:8px 12px;font-size:10.5px;color:#334155;
+            border-bottom:1px solid #f1f5f9;
+        }
+        .report-table tbody td.right  { text-align:right;font-weight:700; }
+        .report-table tbody td.center { text-align:center; }
+        .report-table tbody td.price  { color:#059669;font-weight:800; }
+        .report-table tbody td.num    { color:#94a3b8;font-weight:600; }
+
+        /* highlight low stock rows */
+        .row-low  td { background:#fff7ed !important; }
+        .row-out  td { background:#fff1f2 !important; }
+
+        /* status */
+        .status {
+            display:inline-block;padding:2px 8px;border-radius:10px;
+            font-size:9px;font-weight:700;
+        }
+        .status-ok  { background:#d1fae5;color:#065f46; }
+        .status-low { background:#fff7ed;color:#c2410c; }
+        .status-out { background:#fee2e2;color:#b91c1c; }
+
+        .report-footer {
+            border-top:1px solid #e2e8f0;padding-top:14px;
+            width: 100%;
+        }
+        .footer-note { float: left; font-size:9px;color:#94a3b8; }
+        .footer-sys  { float: right; font-size:9px;color:#cbd5e1; }
+
+        .watermark {
+            position:fixed;bottom:60px;right:36px;
+            font-size:72px;font-weight:900;color:#3b82f6;
+            opacity:0.04;letter-spacing:-4px;
+            transform:rotate(-25deg);pointer-events:none;
+        }
+
+        .clearfix { clear: both; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="watermark">OMBOR</div>
+
+    <div class="report-header">
+        <div class="brand">
+            <div class="brand-logo-box">
+                <div class="brand-icon">S</div>
+            </div>
+            <div class="brand-text-box">
+                <div class="brand-name">Smart Store</div>
+                <div class="brand-sub">Management System</div>
+            </div>
+        </div>
+        <div class="report-meta">
+            <div class="report-type">Ombor Hisoboti</div>
+            <div class="report-date">Yuklab olindi: <span th:text="${reportDate}"></span></div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-card-label">Jami mahsulotlar</div>
+            <div class="summary-card-value blue" th:text="${products != null ? #lists.size(products) : 0}">0</div>
+            <div class="summary-card-sub">Omborxona katalogi</div>
+        </div>
+
+        <div class="summary-spacer"></div> <div class="summary-card">
+        <div class="summary-card-label">Yetarli miqdorda</div>
+        <div class="summary-card-value green" th:text="${products != null ? #lists.size(products) - (lowStockCount ?: 0) - (outOfStockCount ?: 0) : 0}">0</div>
+        <div class="summary-card-sub">5 tadan ko'p</div>
+    </div>
+
+        <div class="summary-spacer"></div> <div class="summary-card">
+        <div class="summary-card-label">Kritik (≤5 ta)</div>
+        <div class="summary-card-value red" th:text="${lowStockCount ?: 0}">0</div>
+        <div class="summary-card-sub">Tez to'ldirish kerak</div>
+    </div>
+
+        <div class="summary-spacer"></div> <div class="summary-card">
+        <div class="summary-card-label">Tugagan</div>
+        <div class="summary-card-value red" th:text="${outOfStockCount ?: 0}">0</div>
+        <div class="summary-card-sub">Stokda mavjud emas</div>
+    </div>
+    </div>
+
+    <div class="alert-box" th:if="${lowStockCount != null and lowStockCount > 0}">
+        ⚠  Diqqat! <span th:text="${lowStockCount}">0</span> ta mahsulot kritik miqdorda qolgan.
+        Ularni tezda to'ldirish tavsiya etiladi.
+    </div>
+
+    <div class="section-title">Barcha mahsulotlar holati</div>
+    <table class="report-table">
+        <thead>
+        <tr>
+            <th class="center" style="width:36px;">№</th>
+            <th>Mahsulot nomi</th>
+            <th>Kategoriya</th>
+            <th class="right">Narxi</th>
+            <th class="center">Miqdori</th>
+            <th class="center">Holat</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="prod, iter : ${products}"
+            th:classappend="${prod.quantity == 0} ? ' row-out' : (${prod.quantity <= 5} ? ' row-low' : '')">
+            <td class="center num" th:text="${iter.count}">1</td>
+            <td style="font-weight:700;" th:text="${prod.name}">Mahsulot</td>
+            <td th:text="${prod.categoryName ?: '—'}">Kategoriya</td>
+            <td class="right price">
+                <span th:text="${#numbers.formatDecimal(prod.price ?: 0, 1, 'WHITESPACE', 0, 'POINT')}">0</span> so'm
+            </td>
+            <td class="center" style="font-weight:800;" th:text="${prod.quantity + ' ta'}">0 ta</td>
+            <td class="center">
+                    <span th:classappend="${prod.quantity == 0} ? ' status-out' : (${prod.quantity <= 5} ? ' status-low' : ' status-ok')"
+                          class="status"
+                          th:text="${prod.quantity == 0} ? 'TUGAGAN' : (${prod.quantity <= 5} ? 'KRITIK' : 'YETARLI')">
+                    </span>
+            </td>
+        </tr>
+        <tr th:if="${products == null or #lists.isEmpty(products)}">
+            <td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">
+                Mahsulotlar topilmadi.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="report-footer">
+        <div class="footer-note">Bu hujjat Smart Store tizimi tomonidan avtomatik yaratilgan.</div>
+        <div class="footer-sys">Smart Store v2.0 | <span th:text="${reportDate}"></span></div>
+        <div class="clearfix"></div>
+    </div>
+
+</div>
+</body>
+</html>

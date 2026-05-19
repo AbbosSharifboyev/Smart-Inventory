@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        /* ── Base ── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            background: #ffffff;
+        }
+
+        .page { padding: 32px 36px; }
+
+        /* ── Header ── */
+        .report-header {
+            width: 100%;
+            border-bottom: 3px solid #f59e0b; /* Ombor harakatlari uchun chiroyli sarg'ish-to'q sariq rang */
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            float: left;
+            width: 50%;
+        }
+        .brand-logo-box {
+            float: left;
+            margin-right: 12px;
+        }
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: #f59e0b;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+            line-height: 40px;
+        }
+        .brand-text-box {
+            float: left;
+            padding-top: 2px;
+        }
+        .brand-name { font-size: 18px; font-weight: 900; color: #0f172a; line-height: 1.1; }
+        .brand-sub  { font-size: 10px; color: #64748b; margin-top: 2px; }
+
+        .report-meta {
+            float: right;
+            text-align: right;
+            width: 45%;
+            padding-top: 2px;
+        }
+        .report-type { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .report-date { font-size: 10px; color: #64748b; margin-top: 3px; }
+        .report-range { font-size: 10px; color: #64748b; }
+
+        /* ── Summary Row ── */
+        .summary-row {
+            width: 100%;
+            margin-bottom: 24px;
+            display: table;
+            table-layout: fixed;
+        }
+        .summary-card {
+            display: table-cell;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: #f8fafc;
+        }
+        .summary-spacer {
+            display: table-cell;
+            width: 12px;
+        }
+        .summary-card-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .summary-card-value { font-size: 18px; font-weight: 900; color: #0f172a; }
+        .summary-card-value.green  { color: #059669; }
+        .summary-card-value.red    { color: #dc2626; }
+        .summary-card-value.blue   { color: #2563eb; }
+
+        .summary-card-sub { font-size: 9px; color: #64748b; margin-top: 3px; }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 12px; font-weight: 800; color: #0f172a;
+            margin-bottom: 10px; padding-left: 10px;
+            border-left: 3px solid #f59e0b;
+        }
+
+        /* ── Table ── */
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+        .report-table thead tr { background: #0f172a; }
+        .report-table thead th {
+            padding: 9px 12px; font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .07em;
+            color: #94a3b8; text-align: left; border: none;
+        }
+        .report-table thead th.right { text-align: right; }
+        .report-table thead th.center { text-align: center; }
+
+        .report-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .report-table tbody tr:nth-child(odd)  { background: #ffffff; }
+
+        .report-table tbody td {
+            padding: 8px 12px; font-size: 10.5px; color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .report-table tbody td.right  { text-align: right; font-weight: 700; }
+        .report-table tbody td.center { text-align: center; }
+        .report-table tbody td.mono   { font-family: monospace; font-weight: 700; color: #2563eb; }
+        .report-table tbody td.amount-in  { color: #059669; font-weight: 800; }
+        .report-table tbody td.amount-out { color: #dc2626; font-weight: 800; }
+        .report-table tbody td.num    { color: #94a3b8; font-weight: 600; }
+
+        /* Badges */
+        .badge-status {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            font-size: 9px; font-weight: 700; text-align: center;
+        }
+        .bs-in       { background: #d1fae5; color: #065f46; }
+        .bs-out      { background: #fee2e2; color: #b91c1c; }
+        .bs-canceled { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; margin-left: 4px; }
+
+        /* Total Row */
+        .total-row td {
+            padding: 10px 12px; font-weight: 800; font-size: 11px;
+            background: #fffbeb !important;
+            border-top: 2px solid #f59e0b; border-bottom: none !important;
+        }
+        .total-row td.price { color: #059669; font-size: 13px; }
+
+        /* ── Footer ── */
+        .report-footer {
+            border-top: 1px solid #e2e8f0; padding-top: 14px;
+            width: 100%;
+        }
+        .footer-note { float: left; font-size: 9px; color: #94a3b8; }
+        .footer-sys  { float: right; font-size: 9px; color: #cbd5e1; }
+
+        .watermark {
+            position: fixed; bottom: 60px; right: 36px;
+            font-size: 72px; font-weight: 900; color: #f59e0b;
+            opacity: 0.04; letter-spacing: -4px;
+            transform: rotate(-25deg); pointer-events: none;
+        }
+
+        .clearfix { clear: both; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="watermark">HARAKAT</div>
+
+    <div class="report-header">
+        <div class="brand">
+            <div class="brand-logo-box">
+                <div class="brand-icon">S</div>
+            </div>
+            <div class="brand-text-box">
+                <div class="brand-name">Smart Store</div>
+                <div class="brand-sub">Management System</div>
+            </div>
+        </div>
+        <div class="report-meta">
+            <div class="report-type">Kirim / Chiqim Hisoboti</div>
+            <div class="report-date">Yuklab olindi: <span th:text="${reportDate}"></span></div>
+            <div class="report-range">
+                Davr: <span th:text="${from}"></span> — <span th:text="${to}"></span>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-card-label">Jami Kirim Summasi</div>
+            <div class="summary-card-value blue">
+                <span th:text="${totalKirimSum != null ? #numbers.formatDecimal(totalKirimSum, 1, 'WHITESPACE', 0, 'POINT') : '0'}">0</span>
+                <small style="font-size: 10px; font-weight: 500;"> so'm</small>
+            </div>
+            <div class="summary-card-sub">Ushbu davrdagi kirim qiymati</div>
+        </div>
+
+        <div class="summary-spacer"></div>
+
+        <div class="summary-card">
+            <div class="summary-card-label">Kirim amallari</div>
+            <div class="summary-card-value green" th:text="${kirimCount ?: 0}">0</div>
+            <div class="summary-card-sub">Muvaffaqiyatli kirimlar soni</div>
+        </div>
+
+        <div class="summary-spacer"></div>
+
+        <div class="summary-card">
+            <div class="summary-card-label">Chiqim amallari</div>
+            <div class="summary-card-value red" th:text="${chiqimCount ?: 0}">0</div>
+            <div class="summary-card-sub">Muvaffaqiyatli chiqimlar soni</div>
+        </div>
+    </div>
+
+    <div class="section-title">Ombor harakatlari jurnali</div>
+    <table class="report-table">
+        <thead>
+        <tr>
+            <th class="center" style="width:36px;">№</th>
+            <th>Tur</th>
+            <th>Mahsulot</th>
+            <th class="center">Miqdor</th>
+            <th class="right">Narx (Harakatdagi)</th>
+            <th>Sabab / Hujjat</th>
+            <th>Sana / Vaqt</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m, iter : ${movements}">
+            <td class="center num" th:text="${iter.count}">1</td>
+            <td>
+                <span th:if="${m.type == 'IN'}" class="badge-status bs-in">KIRIM</span>
+                <span th:if="${m.type == 'OUT'}" class="badge-status bs-out">CHIQIM</span>
+            </td>
+            <td style="font-weight:700;" th:text="${m.productName}">Mahsulot nomi</td>
+            <td class="center" style="font-weight:700;" th:text="${m.quantity + ' dona'}">0 dona</td>
+            <td class="right" th:classappend="${m.type == 'IN'} ? ' amount-in' : ' amount-out'">
+                <span th:if="${m.priceAtMovement != null}">
+                    <span th:text="${#numbers.formatDecimal(m.priceAtMovement, 1, 'WHITESPACE', 0, 'POINT')}">0</span> so'm
+                </span>
+                <span th:unless="${m.priceAtMovement != null}" style="color:#94a3b8; font-weight:normal;">—</span>
+            </td>
+            <td>
+                <span th:if="${m.reason != null}" th:text="${m.reason}">—</span>
+
+                <div th:if="${m.orderId != null}" style="margin-top: 2px;">
+                    <span class="mono" style="font-size: 10px;" th:text="'#ORD-' + ${#strings.substring(m.orderId.toString(), 0, 6).toUpperCase()}"></span>
+
+                    <span th:if="${m.orderStatus == 'CANCELLED'}" class="badge-status bs-canceled">Bekor qilingan</span>
+                </div>
+            </td>
+            <td th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd.MM.yyyy HH:mm') : '—'}"></td>
+        </tr>
+
+        <tr class="total-row" th:if="${movements != null and !#lists.isEmpty(movements)}">
+            <td colspan="2" style="color:#d97706;">JAMI AMALIYOTLAR:</td>
+            <td style="color:#d97706;" th:text="${#lists.size(movements) + ' ta harakat'}"></td>
+            <td colspan="2" class="right price">
+                <span style="font-size: 10px; color:#64748b; font-weight: normal;">Kirim qiymati: </span>
+                <span th:text="${totalKirimSum != null ? #numbers.formatDecimal(totalKirimSum, 1, 'WHITESPACE', 0, 'POINT') : '0'}">0</span> so'm
+            </td>
+            <td colspan="2" style="text-align: right; font-size: 9px; color: #64748b; vertical-align: middle;">
+                Kirimlar: <span th:text="${kirimCount}">0</span> ta | Chiqimlar: <span th:text="${chiqimCount}">0</span> ta
+            </td>
+        </tr>
+
+        <tr th:if="${movements == null or #lists.isEmpty(movements)}">
+            <td colspan="7" style="text-align:center;padding:30px;color:#94a3b8;">
+                Tanlangan davr uchun omborda hech qanday harakatlar topilmadi.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="report-footer">
+        <div class="footer-note">Bu hujjat Smart Store tizimi tomonidan avtomatik yaratilgan.</div>
+        <div class="footer-sys">Smart Store v2.0 | <span th:text="${reportDate}"></span></div>
+        <div class="clearfix"></div>
+    </div>
+
+</div>
+</body>
+</html>

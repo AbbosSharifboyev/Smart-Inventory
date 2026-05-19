@@ -235,4 +235,16 @@ public class OrderServiceImpl extends AbstractService<OrderRepository, OrderMapp
 
         return revenue != null ? revenue : BigDecimal.ZERO;
     }
+
+    public BigDecimal getRevenueByPeriod(String statusName, LocalDate from, LocalDate to){
+
+        LocalDateTime startOfDay = from.atStartOfDay();
+        LocalDateTime endOfDay = to.atTime(java.time.LocalTime.MAX);
+
+        OrderStatus status = OrderStatus.valueOf(statusName);
+
+        BigDecimal revenue = repository.sumRevenueByPeriod(status, startOfDay, endOfDay);
+
+        return revenue != null ? revenue : BigDecimal.ZERO;
+    }
 }

@@ -3,13 +3,16 @@ package uz.pdp.smartinventory.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.pdp.smartinventory.model.domain.Orders;
 import uz.pdp.smartinventory.model.domain.Products;
 import uz.pdp.smartinventory.model.domain.StockMovement;
 import uz.pdp.smartinventory.model.dto.StockMovementDto;
+import uz.pdp.smartinventory.model.dto.StockMovementReportDto;
 import uz.pdp.smartinventory.model.enums.MovementType;
 import uz.pdp.smartinventory.repository.ProductRepository;
 import uz.pdp.smartinventory.repository.StockMovementRepository;
@@ -17,6 +20,7 @@ import uz.pdp.smartinventory.repository.StockMovementRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -100,7 +104,41 @@ public class StockMovementServiceImpl implements StockMovementService{
         dto.setCreatedBy(entity.getCreatedBy());
         if (entity.getOrder() != null){
             dto.setOrderId(entity.getOrder().getId());
+            dto.setOrderStatus(entity.getOrder().getStatus().name());
         }
         return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StockMovementReportDto getMovementReport(LocalDate from, LocalDate to, Pageable pageable) {
+
+        LocalDateTime fromDateTime = (from != null) ? from.atStartOfDay() : LocalDateTime.of(1970, 1, 1, 0, 0);
+        LocalDateTime toDateTime = (to != null) ? to.atTime(23, 59, 59) : LocalDateTime.of(2099, 12, 31, 23, 59);
+
+        Page<StockMovementDto> movementPage = stockMovementRepository.findFiltered(
+                null, null, fromDateTime, toDateTime, pageable)
+                .map(this::convertToDto);
+        List<StockMovementDto> listForStats = movementPage.getContent();
+
+        long kirimCount = listForStats.stream().filter(m -> "IN".equals(m.getType())).count();
+        long chiqimCount = listForStats.stream().filter(m -> "OUT".equals(m.getType())).count();
+
+        BigDecimal totalKirimSumma = listForStats.stream()
+                .filter(m -> "IN".equals(m.getType()))
+                .map(m -> {
+                    if (m.getPriceAtMovement() == null) return BigDecimal.ZERO;
+
+                    return m.getPriceAtMovement().multiply(BigDecimal.valueOf(m.getQuantity()));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        StockMovementReportDto reportDto = new StockMovementReportDto();
+        reportDto.setMovementPage(movementPage);
+        reportDto.setKirimCount(kirimCount);
+        reportDto.setChiqimCount(chiqimCount);
+        reportDto.setTotalKirimSum(totalKirimSumma);
+
+        return reportDto;
     }
 }
