@@ -28,7 +28,10 @@ public interface OrderMapper {
     Orders toEntity(OrderRequestDto dto);
 
     @Mapping(target = "userFullName",source = "user.fullName", defaultValue = "Noma'lum mijoz")  // User entity-dagi fullName-ni oladi
+    @Mapping(target = "address", source = "entity.address")
+    @Mapping(target = "phone", source = "entity.phone")
     OrderDto toDto(Orders entity);
+
 
     // Order ichidagi har bir mahsulot (Item) Mapping
     @Mapping(target = "productId",source = "product.id")

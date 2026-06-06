@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
+
 public interface UserRepository extends BaseRepository<Users, UUID> {
 
     // Login uchun o'chirilmagan foydalanuvchini topish
@@ -45,4 +45,6 @@ public interface UserRepository extends BaseRepository<Users, UUID> {
     long countByRole(Role role);
 
     List<Users> findAllByDeletedFalse();
+
+    long countByDeletedFalse();
 }

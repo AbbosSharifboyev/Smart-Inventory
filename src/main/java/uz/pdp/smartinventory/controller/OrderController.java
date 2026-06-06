@@ -4,27 +4,30 @@ package uz.pdp.smartinventory.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.smartinventory.criteria.OrderCriteria;
-import uz.pdp.smartinventory.model.dto.OrderDto;
-import uz.pdp.smartinventory.model.dto.OrderRequestDto;
-import uz.pdp.smartinventory.model.dto.OrderUpdateDto;
+import uz.pdp.smartinventory.model.dto.*;
 import uz.pdp.smartinventory.model.enums.OrderStatus;
 import uz.pdp.smartinventory.service.OrderService;
 import uz.pdp.smartinventory.service.ProductService;
 import uz.pdp.smartinventory.service.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/orders")
+@RestController
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("hasRole('ADMIN')")
+@CrossOrigin(origins = "*")
 public class OrderController {
 
     private final OrderService orderService;
@@ -32,70 +35,47 @@ public class OrderController {
     private final UserService userService;
 
     @GetMapping
-    public String getAll(Model model, @ModelAttribute("criteria") OrderCriteria criteria){
+    public ResponseEntity<Page<OrderDto>> getAll(OrderCriteria criteria){
 
         Page<OrderDto> orderPage = orderService.getAll(criteria);
-
-        model.addAttribute("orders", orderPage);
-        model.addAttribute("totalPages", orderPage.getTotalPages());
-        model.addAttribute("currentPage", criteria.getPage());
-        model.addAttribute("statuses", OrderStatus.values());
-        model.addAttribute("criteria",criteria);
-        model.addAttribute("totalOrders", orderPage.getTotalElements());
-        model.addAttribute("activeCount", orderService.countByStatuses(List.of("NEW", "PROCESSING")));
-        model.addAttribute("completedCount", orderService.countByStatus("COMPLETED"));
-        model.addAttribute("cancelledCount", orderService.countByStatus("CANCELLED"));
-        return "order/list";
+        return ResponseEntity.ok(orderPage);
     }
 
-    @GetMapping("/create")
-    public String createPage(Model model){
-        model.addAttribute("orderRequest",new OrderRequestDto());
-        model.addAttribute("products",productService.getAllActive());
-        model.addAttribute("users",userService.getAllUsers());
-        return "order/create";
+    // Buyurtmalar sahifasi tepasidagi statistika ko'rsatkichlari uchun
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Long>> getStats(){
+
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("activeCount", orderService.countByStatuses(List.of("NEW", "PROCESSING")));
+        stats.put("completedCount", orderService.countByStatus("COMPLETED"));
+        stats.put("cancelledCount", orderService.countByStatus("CANCELLED"));
+
+        return ResponseEntity.ok(stats);
     }
 
-    @PostMapping("/create")
-    public String create(@Valid @ModelAttribute("orderRequest") OrderRequestDto dto,
-                         BindingResult bindingResult,
-                         Model model){
-        if (bindingResult.hasErrors()){
-            System.out.println("Validatsiya xatosi: " + bindingResult.getAllErrors());
-            model.addAttribute("products",productService.getAllActive());
-            model.addAttribute("users",userService.getAllUsers());
-            return "order/create";
-        }
-        orderService.create(dto);
-        return "redirect:/orders";
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderDto> getById(@PathVariable UUID id){
+        return ResponseEntity.ok(orderService.get(id));
     }
 
-    @GetMapping("/update/{id}")
-    public String updatePage(@PathVariable UUID id,Model model){
-        // Mavjud buyurtmani olamiz
-        OrderDto order = orderService.get(id);
 
-        // Update uchun DTO tayyorlaymiz (mavjud ma'lumotlar bilan)
-        OrderUpdateDto updateDto = new OrderUpdateDto();
+    @PostMapping()
+    public ResponseEntity<OrderDto> create(@Valid @RequestBody OrderRequestDto dto){
 
-        updateDto.setStatus(order.getStatus()); // Hozirgi statusini o'rnatamiz
-        model.addAttribute("orderUpdate",order);
-        model.addAttribute("orderId",id);
-        model.addAttribute("statuses", OrderStatus.values());
-        return "order/update";
+        OrderDto savedDto = orderService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedDto);
     }
 
-    @PostMapping("/update/{id}")
-    public String update(@PathVariable UUID id,
-                         @ModelAttribute("orderUpdate") OrderUpdateDto dto){
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable UUID id,
+                                       @Valid @RequestBody OrderUpdateDto dto){
         orderService.update(dto,id);
-        return "redirect:/orders";
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/delete/{id}")
-    public String delete(@PathVariable UUID id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id){
         orderService.delete(id);
-        return "redirect:/orders";
+        return ResponseEntity.noContent().build();
     }
-
 }

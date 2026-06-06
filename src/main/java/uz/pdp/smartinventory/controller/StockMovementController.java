@@ -7,11 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uz.pdp.smartinventory.model.dto.StockMovementCreateDto;
 import uz.pdp.smartinventory.model.dto.StockMovementDto;
 import uz.pdp.smartinventory.model.enums.MovementType;
@@ -21,44 +19,35 @@ import uz.pdp.smartinventory.service.StockMovementService;
 import java.time.LocalDate;
 
 
-@Controller
-@RequestMapping("/transactions")
+@RestController
+@RequestMapping("/api/v1/stock-movements")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("hasRole('ADMIN')")
 public class StockMovementController {
 
     private final StockMovementService stockMovementService;
     private final ProductService productService;
 
     @GetMapping()
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public String listMovements(
-            Model model,
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<Page<StockMovementDto>> listMovements(
             @RequestParam(required = false) MovementType type,
             @RequestParam(required = false) String product,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate to,
-            @PageableDefault(sort = "createdAt",
-                                        direction = Sort.Direction.DESC) Pageable pageable){
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
+
         Page<StockMovementDto> movementPage =
                 stockMovementService.getFilteredMovements(type, product, from, to ,pageable);
 
-        model.addAttribute("movements",movementPage.getContent());
-        model.addAttribute("movementPage",movementPage);
-
-        // Qo'lda kirim qilish formasi uchun mahsulotlar ro'yxati
-        model.addAttribute("products",productService.getAllActive());
-        model.addAttribute("activePage","transactions"); // Menu aktivligi uchun
-
-        return "transaction/list";
+        return ResponseEntity.ok(movementPage);
     }
 
     //  Omborga qo`lda mahsulot kiritish
     @PostMapping("/in")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public String manualStockIn(@ModelAttribute @Valid StockMovementCreateDto dto,
-                                RedirectAttributes redirectAttributes){
-        try {
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<Void> manualStockIn(@Valid @RequestBody StockMovementCreateDto dto){
+
             stockMovementService.createMovement(
                     dto.getProductId(),
                     dto.getQuantity(),
@@ -67,10 +56,6 @@ public class StockMovementController {
                     null,
                     null
             );
-            redirectAttributes.addFlashAttribute("successMessage", "Mahsulot muvaffaqiyatli kirim qilindi!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Xatolik yuz berdi: " + e.getMessage());
-        }
-        return "redirect:/transactions";
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

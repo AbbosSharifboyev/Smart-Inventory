@@ -1,6 +1,7 @@
 package uz.pdp.smartinventory.service;
 
 import jakarta.persistence.criteria.Predicate;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.util.StringUtils;
 import uz.pdp.smartinventory.criteria.ProductCriteria;
 import uz.pdp.smartinventory.mapper.ProductMapper;
 import uz.pdp.smartinventory.model.domain.Products;
+import uz.pdp.smartinventory.model.dto.IdNameDto;
 import uz.pdp.smartinventory.model.dto.ProductCreateDto;
 import uz.pdp.smartinventory.model.dto.ProductDto;
 import uz.pdp.smartinventory.model.dto.ProductUpdateDto;
@@ -145,8 +147,6 @@ public class ProductService extends AbstractService<
         return repository.findAllWithCategories();
     }
 
-
-
     private Products findByIdOrThrow(UUID id){
         return repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Mahsulot topilmadi "+id));
@@ -162,10 +162,9 @@ public class ProductService extends AbstractService<
 
     public Page<ProductDto> getFilteredProducts(ProductCriteria criteria) {
 
+        int page = (criteria.getPage() != null) ? criteria.getPage() : 0;
+        int size = (criteria.getSize() != null) ? criteria.getSize() : 12;
 
-        if (criteria.getSize() == null || criteria.getSize() != 12){
-            criteria.setSize(12);
-        }
         Sort sort = Sort.by("id").descending();
         if (criteria.getSort() != null && !criteria.getSort().isBlank()){
             sort = switch (criteria.getSort()){
@@ -176,16 +175,17 @@ public class ProductService extends AbstractService<
             };
         }
 
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Products> products;
         if (criteria.getName() != null && !criteria.getName().isBlank()){
-            products = repository.findAllByNameContainingIgnoreCaseAndDeletedFalse(criteria.getName(),pageable);
-        }else {
+            products = repository.findAllByNameContainingIgnoreCaseAndDeletedFalse(criteria.getName(), pageable);
+        } else {
             products = repository.findAllByDeletedFalse(pageable);
         }
         return products.map(mapper::toDto);
     }
+
 
     public long getLowStockProducts() {
         int threshold = 6;
@@ -195,5 +195,15 @@ public class ProductService extends AbstractService<
     public List<Products> getLowStockProductsList() {
         int threshold = 6;
         return repository.findAllByQuantityLessThanAndDeletedFalse(threshold);
+    }
+
+    public Long countTotalProducts() {
+        return repository.countByDeletedFalse();
+    }
+
+    public List<IdNameDto> getAllActiveForSelect() {
+        return repository.findAllByDeletedFalse().stream()
+                .map(products -> new IdNameDto(products.getId(), products.getName()))
+                .toList();
     }
 }

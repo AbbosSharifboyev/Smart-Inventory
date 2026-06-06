@@ -10,16 +10,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import uz.pdp.smartinventory.criteria.OrderCriteria;
 import uz.pdp.smartinventory.criteria.ProductCriteria;
 import uz.pdp.smartinventory.model.dto.OrderDto;
 import uz.pdp.smartinventory.model.dto.StockMovementReportDto;
-import uz.pdp.smartinventory.model.enums.OrderStatus;
 import uz.pdp.smartinventory.service.*;
 
 import java.time.LocalDate;
@@ -29,10 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
-@RequestMapping("/reports")
+@RestController
+@RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("hasRole('ADMIN')")
+@CrossOrigin(origins = "*")
 public class ReportController {
 
     private final ReportService reportService;
@@ -42,35 +38,76 @@ public class ReportController {
     private final StockMovementService stockMovementService;
 
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public String reportsPage(
-            @RequestParam(defaultValue = "sales") String type,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            Model model
-            ) {
+    // ==========================================
+    //  1. JADVAL MA'LUMOTLARI UCHUN ENDPOINTLAR (JSON)
+    // ==========================================
+
+    //  A. Savdo (Sales) hisoboti ma'lumotlari
+    @GetMapping("/sales")
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<Map<String, Object>> getSalesReport(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to){
+
         // default time last 30 days
         if (from == null) from = LocalDate.now().minusDays(30);
         if (to == null) to = LocalDate.now();
 
-        model.addAttribute("type", type);
-        model.addAttribute("from", from);
-        model.addAttribute("to",   to);
+        OrderCriteria criteria = new OrderCriteria();
+        criteria.setDateFrom(from);
+        criteria.setDateTo(to);
+        criteria.setSize(1000);
 
-        switch (type){
-            case "warehouse" -> buildWareHouseModel(model);
-            case "movements" -> buildMovementsModel(model, from, to, pageable);
-            default          -> buildSalesModel(model, from, to);
-        }
-        return "reports/list";
+        List<OrderDto> sales = orderService.getAll(criteria).getContent();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("orders", sales);
+        response.put("totalOrders", sales.size());
+        response.put("totalRevenue", orderService.getTotalRevenue());
+        response.put("users", userService.getAllUsers());
+
+        return ResponseEntity.ok(response);
     }
 
+    // Ombor (Warehouse) qoldig'i hisoboti ma'lumotlari
+    @GetMapping("/warehouse")
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<Map<String, Object>> getWarehouseReport(){
+        ProductCriteria criteria = new ProductCriteria();
+        criteria.setSize(1000);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("products", productService.getAll(criteria).getContent());
+        response.put("lowStockProducts", productService.getLowStockProductsList());
+        response.put("lowStockCount", productService.getLowStockProductsList().size());
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    // Ombor Harakatlari (Movements) hisoboti ma'lumotlari
+    @GetMapping("/movements")
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<StockMovementReportDto> getMovementsReport(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
+
+        if (from == null) from = LocalDate.now().minusDays(30);
+        if (to == null) to = LocalDate.now();
+
+        StockMovementReportDto report = stockMovementService.getMovementReport(from, to, pageable);
+        return ResponseEntity.ok(report);
+
+    }
+
+    // ==========================================
+    //  2. PDF FILE YUKLAB OLISH ENDPOINTLARI (BYTE)
+    // ==========================================
+
+    //  D. Tanlangan tur bo'yicha mukammal PDF hisobot yuklab olish
     @GetMapping("/pdf")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<byte[]> downloadPdf(
             @RequestParam(defaultValue = "sales") String type,
             @RequestParam(required = false)
@@ -138,9 +175,9 @@ public class ReportController {
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
-
+    // Dashboard umumiy qisqacha hisobotini PDF yuklab olish
     @GetMapping("/download")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    //@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<byte[]> downloadReport() throws Exception{
 
         Map<String, Object> data = new HashMap<>();
@@ -156,42 +193,5 @@ public class ReportController {
         headers.setContentDispositionFormData("attachment", "SmartStore_Report.pdf");
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
-    }
-
-    private void buildSalesModel(Model model, LocalDate from, LocalDate to){
-
-        OrderCriteria criteria = new OrderCriteria();
-        criteria.setDateFrom(from);
-        criteria.setDateTo(to);
-        criteria.setSize(1000);
-        //criteria.setStatus(OrderStatus.COMPLETED);
-
-        List<OrderDto> sales = orderService.getAll(criteria).getContent();
-
-        model.addAttribute("orders",       sales);
-        model.addAttribute("totalOrders",  sales.size());
-        model.addAttribute("totalRevenue", orderService.getTotalRevenue());
-        model.addAttribute("users",        userService.getAllUsers());
-    }
-
-    private void buildWareHouseModel(Model model){
-
-        ProductCriteria criteria = new ProductCriteria();
-        criteria.setSize(1000);
-
-        model.addAttribute("products", productService.getAll(criteria).getContent());
-        model.addAttribute("lowStockProducts", productService.getLowStockProductsList());
-        model.addAttribute("lowStockCount", productService.getLowStockProductsList().size());
-    }
-
-    private void buildMovementsModel(Model model, LocalDate from, LocalDate to, Pageable pageable){
-
-        StockMovementReportDto report = stockMovementService.getMovementReport(from, to, pageable);
-
-        model.addAttribute("movements",     report.getMovementPage().getContent());
-        model.addAttribute("movementPage", report.getMovementPage());
-        model.addAttribute("kirimCount",    report.getKirimCount());
-        model.addAttribute("chiqimCount",   report.getChiqimCount());
-        model.addAttribute("totalKirimSum", report.getTotalKirimSum());
     }
 }

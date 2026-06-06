@@ -1,8 +1,6 @@
 package uz.pdp.smartinventory.service;
 
 import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
@@ -17,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import uz.pdp.smartinventory.config.MyUserDetails;
 import uz.pdp.smartinventory.criteria.UserCriteria;
 import uz.pdp.smartinventory.mapper.UserMapper;
 import uz.pdp.smartinventory.model.domain.Permission;
@@ -32,6 +29,7 @@ import uz.pdp.smartinventory.repository.UserRepository;
 import uz.pdp.smartinventory.validator.UserValidator;
 
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -66,7 +64,7 @@ public class UserService
 
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Users authUser = repository.findByUsernameAndDeletedFalse(username)
@@ -76,6 +74,7 @@ public class UserService
     }
 
     @Override
+    @Transactional
     public UserDto create(UserCreateDto dto) {
 
         validator.validateOnCreate(dto);
@@ -130,10 +129,6 @@ public class UserService
         }
     }
 
-    public UserUpdateDto getForUpdate(UUID id){
-        UserDto userDto = get(id);
-        return mapper.toUpdateDto(userDto);
-    }
 
     @Transactional
     public void changePassword(UUID userId, PasswordChangeDto dto){
@@ -168,6 +163,7 @@ public class UserService
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto get(UUID userId) {
 
         Users user = validator.existAndGet(userId);
@@ -175,6 +171,7 @@ public class UserService
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<UserDto> getAll(UserCriteria criteria) {
 
         int page = (criteria.getPage() != null) ? criteria.getPage() : 0;
@@ -216,6 +213,7 @@ public class UserService
         }, pageable).map(mapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers(){
         return repository.findAllByDeletedFalse().stream()
                 .map(mapper::toDto)
@@ -223,6 +221,7 @@ public class UserService
     }
 
     @Override
+    @Transactional
     public void delete(UUID userId) {
         Users user = validator.existAndGet(userId);
         user.setDeleted(true);
@@ -234,17 +233,45 @@ public class UserService
         repository.save(user);
     }
 
+    @Transactional
+    public void saveRefreshToken(String username, String refreshToken){
+        repository.findByUsernameAndDeletedFalse(username).ifPresent(user -> {
+            user.setRefreshToken(refreshToken);
+            repository.save(user);
+        });
+    }
+
+    public boolean validateDatabaseRefreshToken(String username, String incomingToken){
+        return repository.findByUsernameAndDeletedFalse(username)
+                .map(user -> user.getRefreshToken() != null && user.getRefreshToken().equals(incomingToken))
+                .orElse(false);
+    }
+
+    @Transactional(readOnly = true)
     public long countActiveUsers() {
         return repository.countByEnabledTrue();
     }
 
-
+    @Transactional(readOnly = true)
     public long countBlockedUsers() {
         return repository.countByEnabledFalse();
     }
 
-
+    @Transactional(readOnly = true)
     public long countUsersByRole(String roleName) {
         return repository.countByRole(Role.valueOf(roleName));
+    }
+
+    @Transactional(readOnly = true)
+    public long countTotalUsers() {
+        return repository.countByDeletedFalse();
+    }
+
+    public void updateLastLogin(String username) {
+        repository.findByUsernameAndDeletedFalse(username)
+                .ifPresent(user -> {
+                    user.setLastLogin(LocalDateTime.now());
+                    repository.save(user);
+                });
     }
 }

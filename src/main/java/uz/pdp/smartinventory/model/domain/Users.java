@@ -47,4 +47,7 @@ public class Users extends BaseEntity {
 
     private boolean enabled = true; // akkaunt holati spring security uchun
     private LocalDateTime lastLogin;
+
+    @Column(name = "refresh_token", length = 500)
+    private String refreshToken;
 }

@@ -10,6 +10,7 @@ import uz.pdp.smartinventory.model.domain.Categories;
 import uz.pdp.smartinventory.model.dto.CategoryCreateDto;
 import uz.pdp.smartinventory.model.dto.CategoryDto;
 import uz.pdp.smartinventory.model.dto.CategoryUpdateDto;
+import uz.pdp.smartinventory.model.dto.IdNameDto;
 import uz.pdp.smartinventory.repository.CategoryRepository;
 import uz.pdp.smartinventory.validator.CategoryValidator;
 
@@ -103,9 +104,9 @@ public class CategoryService extends AbstractService<
                 .orElseThrow(() -> new RuntimeException("Kategoriya topilmadi " + id));
     }
 
-    public List<CategoryDto> getAllForSelect() {
-        return repository.findAllByDeletedFalse().stream().
-                map(mapper::toDto).
-                collect(Collectors.toList());
+    public List<IdNameDto> getAllForSelect() {
+        return repository.findAllByDeletedFalse().stream()
+                .map(category -> new IdNameDto(category.getId(), category.getName()))
+                .toList();
     }
 }

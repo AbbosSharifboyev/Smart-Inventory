@@ -12,7 +12,7 @@ import uz.pdp.smartinventory.model.enums.MovementType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Repository
+
 public interface StockMovementRepository extends BaseRepository<StockMovement, UUID> {
 
 

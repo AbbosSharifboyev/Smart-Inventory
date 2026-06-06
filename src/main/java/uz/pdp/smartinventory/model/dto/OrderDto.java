@@ -14,4 +14,6 @@ public class OrderDto extends BaseDto{
     private BigDecimal totalAmount;
     private OrderStatus status;
     private List<OrderItemDto> items;
+    private String phone;
+    private String address;
 }
